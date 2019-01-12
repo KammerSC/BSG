@@ -32,6 +32,7 @@ public class Server : MonoBehaviour
         Debug.Log("Opening port: " + port);
         isstarted = true;
         clients = new List<Client_data>();
+        clients.Add(new Client_data(0));
 
         Debug.Log("<{[SERVER STARTED]}>");
     }

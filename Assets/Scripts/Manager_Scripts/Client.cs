@@ -40,7 +40,7 @@ public class Client : MonoBehaviour
         hostid = NetworkTransport.AddHost(topo, 0);
 
     }
-    public void Connect()
+    public void Connect(string serverip)
     {
         connectionid = NetworkTransport.Connect(hostid, serverip,  port, 0, out error);
 

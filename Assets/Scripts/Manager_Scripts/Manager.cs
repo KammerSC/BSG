@@ -9,20 +9,19 @@ public class Manager : MonoBehaviour
     string address;
 
     [SerializeField]
-    GameObject clientobj, mainmenu, host, join, lobby, game;
+    GameObject mainmenu, host, join, lobby, game;
+
+    InputField addressfield;
 
     [SerializeField]
-    Text addressfield;
+    GameObject serverpf, clientpf, ipaddressfield;
 
-    [SerializeField]
-    GameObject serverpf;
-
-    GameObject serverobj; Server server;
-    Client client;
+    GameObject serverobj, clientobj; 
+    Client client; Server server;
 
     void Start()
     {
-        client = clientobj.GetComponent<Client>();
+        addressfield = ipaddressfield.GetComponent<InputField>();
         addressfield.text = "127.0.0.1";
     }
 
@@ -32,21 +31,21 @@ public class Manager : MonoBehaviour
     public void Host(){
         serverobj = Instantiate(serverpf);
         server = serverobj.GetComponent<Server>();
+        isserver = true;
         mainmenu.SetActive(false);
         lobby.SetActive(true);
     }
     public void Join(){
+        clientobj = Instantiate(clientpf);
+        client = clientobj.GetComponent<Client>();
         mainmenu.SetActive(false);
         join.SetActive(true);
+
     }
     public void Connect()
     {
         Debug.Log("Addressfield: " + addressfield.text);
-
-
-
-        client.serverip = addressfield.text;
-        client.Connect();
+        client.Connect(addressfield.text);
         join.SetActive(false);
         lobby.SetActive(true);
     }
