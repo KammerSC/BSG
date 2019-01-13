@@ -6,6 +6,7 @@ public class Settings
 {
     sbyte bonusres = 0, maxdist = 8, skillbonus = 0, crisisextrastr = 0;
     sbyte maxraider = 16, maxheavyraider = 4, maxbattlestar = 2, viper = 8, raptor = 4;
+    sbyte dmggalactica = 6 /*4-8*/, boardingparty = 5 /*4-6*/ /*jumpprep*/;
 
 
     public void SetBonusRes(int x){
@@ -63,6 +64,10 @@ public class Settings
         else if (x < 0 && maxraider > 7)
             maxraider--;
     }
+
+
+
+
     public byte[] SettingToSend(){
         byte[] array = new byte[11];
         array[0] = 2; array[1] = 2;
