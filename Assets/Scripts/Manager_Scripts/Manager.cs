@@ -19,6 +19,43 @@ public class Manager : MonoBehaviour
     GameObject serverobj, clientobj; 
     Client client; Server server;
 
+    //Lobby settings
+    #region Lobby 
+    Settings settings = new Settings();
+
+    [SerializeField]
+    Text bonusres, distance, skillbonus, crisisextrastr, maxraider, maxheavyraider, maxbattlestar;
+    [SerializeField]
+    Text viper, raptor, dmggalactica, boardingparty, jumpprepred, jumppoploss;
+
+
+    void InitLobbySettings()
+    {
+        bonusres.text = settings.bonusres.ToString();
+        distance.text = settings.distance.ToString();
+        skillbonus.text = settings.skillbonus.ToString();
+        crisisextrastr.text = settings.crisisextrastr.ToString();
+        maxraider.text = settings.maxraider.ToString();
+
+    }
+
+
+    #endregion Lobby
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     void Start()
     {
         addressfield = ipaddressfield.GetComponent<InputField>();
@@ -33,6 +70,7 @@ public class Manager : MonoBehaviour
         server = serverobj.GetComponent<Server>();
         isserver = true;
         mainmenu.SetActive(false);
+        InitLobbySettings();
         lobby.SetActive(true);
     }
     public void Join(){
