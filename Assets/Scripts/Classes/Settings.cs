@@ -8,95 +8,117 @@ public class Settings
     public sbyte maxraider = 16, maxheavyraider = 4, maxbattlestar = 2, viper = 8, raptor = 4;
     public sbyte dmggalactica = 6, boardingparty = 5, jumpprepred = 2, jumppoploss = 0;
 
+    public sbyte[] array = new sbyte[15];
+
+    public Settings()
+    {
+        array[0] = 0;   //Extra resource at start
+        array[1] = 8;   //Distance required for the last jump
+        array[2] = 0;   //Extra strength to skillcard's power
+        array[3] = 0;   //Extra strength to crisiscard's difficulty
+        array[4] = 16;  //Maximum number of Raiders on the board
+        array[5] = 4;   //Maximum number of Heavyraiders on the board
+        array[6] = 2;   //Maximum number of Battlestars on the board
+        array[7] = 8;   //Viper reserve at the start
+        array[8] = 4;   //Raptor reserve at the start
+        array[9] = 6;   //Number of damaged locations required to destroy the Galactica
+        array[10] = 5;  //Number of Centurions required to capture the Galactica
+        array[11] = 2;  //Number of red space in the Jump Preparation Track
+        array[12] = 0;  //Extra Population lost on premature 
+        array[13] = 0;  //Placeholder
+        array[14] = 0;  //Placeholder
+    }
+
+    //   array[]
 
     public void SetBonusRes(int x){
-        if (x > 0 && bonusres < 4)
-            bonusres++;
-        else if (x < 0 && bonusres > -3)
-            bonusres--;
+        if (x > 0 && array[0] < 4)
+            array[0]++;
+        else if (x < 0 && array[0] > -3)
+            array[0]--;
     }
     public void SetDistance(int x){
-        if (x > 0 && distance < 13)
-            distance++;
-        else if (x < 0 && distance > 5)
-            distance--;
+        if (x > 0 && array[1] < 13)
+            array[1]++;
+        else if (x < 0 && array[1] > 5)
+            array[1]--;
     }
     public void SetSkillBonus(int x){
-        if (x > 0 && skillbonus < 3)
-            skillbonus++;
-        else if (x < 0 && distance > -2)
-            skillbonus--;
+        if (x > 0 && array[2] < 3)
+            array[2]++;
+        else if (x < 0 && array[2] > -2)
+            array[2]--;
     }
     public void SetCrisisStr(int x){
-        if (x > 0 && crisisextrastr < 4)
-            crisisextrastr++;
-        else if (x < 0 && crisisextrastr > -4)
-            crisisextrastr--;
+        if (x > 0 && array[3] < 4)
+            array[3]++;
+        else if (x < 0 && array[3] > -4)
+            array[3]--;
     }
     public void SetMaxRaider(int x){
-        if (x > 0 && maxraider < 33)
-            maxraider++;
-        else if (x < 0 && maxraider > 7)
-            maxraider--;
+        if (x > 0 && array[4] < 33)
+            array[4]++;
+        else if (x < 0 && array[4] > 7)
+            array[4]--;
     }
     public void SetMaxHeavyRaider(int x){
-        if (x > 0 && maxheavyraider < 9)
-            maxheavyraider++;
-        else if (x < 0 && maxheavyraider > 1)
-            maxheavyraider--;
+        if (x > 0 && array[5] < 9)
+            array[5]++;
+        else if (x < 0 && array[5] > 1)
+            array[5]--;
     }
     public void SetMaxBattleStar(int x){
-        if (x > 0 && maxbattlestar < 33)
-            maxbattlestar++;
-        else if (x < 0 && maxbattlestar > 7)
-            maxbattlestar--;
+        if (x > 0 && array[6] < 33)
+            array[6]++;
+        else if (x < 0 && array[6] > 7)
+            array[6]--;
     }
     public void SetViper(int x){
-        if (x > 0 && viper < 17)
-            viper++;
-        else if (x < 0 && viper > 3)
-            viper--;
+        if (x > 0 && array[7] < 17)
+            array[7]++;
+        else if (x < 0 && array[7] > 3)
+            array[7]--;
     }
     public void SetRaptors(int x){
-        if (x > 0 && maxraider < 33)
-            maxraider++;
-        else if (x < 0 && maxraider > 7)
-            maxraider--;
+        if (x > 0 && array[8] < 33)
+            array[8]++;
+        else if (x < 0 && array[8] > 7)
+            array[8]--;
     }
     public void SetDmgGalactica(int x)
     {
-        if (x > 0 && dmggalactica < 9)
-            dmggalactica++;
-        else if (x < 0 && dmggalactica > 3)
-            dmggalactica--;
+        if (x > 0 && array[9] < 9)
+            array[9]++;
+        else if (x < 0 && array[9] > 3)
+            array[9]--;
     }
     public void SetBoardingParty(int x)
     {
-        if (x > 0 && boardingparty < 7)
-            boardingparty++;
-        else if (x < 0 && boardingparty > 3)
-            boardingparty--;
+        if (x > 0 && array[10] < 7)
+            array[10]++;
+        else if (x < 0 && array[10] > 3)
+            array[10]--;
     }
     public void SetJumPrepRed(int x)
     {
-        if (x > 0 && jumpprepred < 4)
-            jumpprepred++;
-        else if (x < 0 && jumpprepred > 30)
-            jumpprepred--;
+        if (x > 0 && array[11] < 4)
+            array[11]++;
+        else if (x < 0 && array[11] > 30)
+            array[11]--;
     }
     public void SetJumpPopLoss(int x)
     {
-        if (x > 0 && jumppoploss < 2)
-            jumppoploss++;
-        else if (x < 0 && jumppoploss > -1)
-            jumppoploss--;
+        if (x > 0 && array[12] < 2)
+            array[12]++;
+        else if (x < 0 && array[12] > -1)
+            array[12]--;
     }
 
     public void SettingsToStandard()
     {
-        bonusres = 0; distance = 8; skillbonus = 0; crisisextrastr = 0;
-        maxraider = 16; maxheavyraider = 4; maxbattlestar = 2; viper = 8; raptor = 4;
-        dmggalactica = 6; boardingparty = 5; jumpprepred = 2; jumppoploss = 0;
+        array[0] = 0;   array[1] = 8;   array[2] = 0;   array[3] = 0;   array[4] = 16;
+        array[5] = 4;   array[6] = 2;   array[7] = 8;   array[8] = 4;   array[9] = 6;
+        array[10] = 5;  array[11] = 2;  array[12] = 0;  array[13] = 0;  array[14] = 0;
     }
 
 
@@ -104,23 +126,14 @@ public class Settings
 
 
     public byte[] SettingToSend(){
-        byte[] array = new byte[11];
-        array[0] = 2; array[1] = 2;
-
-        array[2] = (byte) bonusres;
-        array[3] = (byte) distance;
-        array[4] = (byte) skillbonus;
-        array[5] = (byte) crisisextrastr;
-        array[6] = (byte) maxraider;
-        array[7] = (byte) maxheavyraider;
-        array[8] = (byte) maxbattlestar;
-        array[9] = (byte) viper;
-        array[10] = (byte) raptor;
-
-        return array;
+        byte[] tmp = new byte[array.Length];
+        for (int i = 0; i < array.Length; i++)
+            tmp[i + 2] = (byte) array[i];
+        return tmp;
     }
-    public void ReciveSetting(byte[] array){
-
+    public void ReciveSetting(byte[] tmp){
+        for (int i = 0; i < array.Length; i++)
+            array[i] = (sbyte) tmp[i+2];
 
     }
 

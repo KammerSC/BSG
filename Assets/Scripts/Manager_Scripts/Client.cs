@@ -8,6 +8,8 @@ using System;
 
 public class Client : MonoBehaviour
 {
+
+    #region Connect stuff
     int channel, maxuser = 12;
     int port = 14789;
     public string serverip = "127.0.0.1";
@@ -16,13 +18,28 @@ public class Client : MonoBehaviour
     int hostid, connectionid;
     bool isstarted;
 
+    #endregion
+
+
     byte databyte = 0;
 
-    [SerializeField]
-    Text txt;
+    GameObject ui;
+
+
+
+    #region Lobby stuff
+
+
+
+
+
+    #endregion 
+
+
 
     void Start(){
         Init();
+        ui = GameObject.Find("UI");
     }
     void Update(){
         UpdateMassage();
@@ -64,7 +81,6 @@ public class Client : MonoBehaviour
                 //Debug.Log("<SERVER> Nothing.");
                 break;
             case NetworkEventType.DataEvent:
-                txt.text = recbuffer[0].ToString();
                 Debug.Log("<Client> The server sent data: " + recbuffer[0]);
                 break;
             case NetworkEventType.ConnectEvent:

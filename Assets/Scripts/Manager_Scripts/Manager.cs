@@ -24,21 +24,33 @@ public class Manager : MonoBehaviour
     Settings settings = new Settings();
 
     [SerializeField]
-    Text bonusres, distance, skillbonus, crisisextrastr, maxraider, maxheavyraider, maxbattlestar;
-    [SerializeField]
-    Text viper, raptor, dmggalactica, boardingparty, jumpprepred, jumppoploss;
-
+    Text[] counters;
 
     void InitLobbySettings()
     {
-        bonusres.text = settings.bonusres.ToString();
-        distance.text = settings.distance.ToString();
-        skillbonus.text = settings.skillbonus.ToString();
-        crisisextrastr.text = settings.crisisextrastr.ToString();
-        maxraider.text = settings.maxraider.ToString();
+        counters = new Text[lobby.transform.childCount - 4];
+        for(int i=4; i< lobby.transform.childCount; i++)
+            counters[i-4] = lobby.transform.GetChild(i).transform.GetChild(0).GetComponent<Text>();
 
+        if (isserver == false){
+            Debug.Log("isserver: " + isserver);
+            for(int i=0; i<lobby.transform.childCount; i++){
+                if (i < 4)
+                    lobby.transform.GetChild(i).gameObject.SetActive(false);
+                else{
+                    lobby.transform.GetChild(i).gameObject.transform.GetChild(1).gameObject.SetActive(false);
+                    lobby.transform.GetChild(i).gameObject.transform.GetChild(2).gameObject.SetActive(false);
+                }
+            }
+            
+        }
+        SetActualSettings();
     }
-
+    void SetActualSettings()
+    {
+        for (int i = 0; i < counters.Length - 2; i++)
+            counters[i].text = settings.array[i].ToString();
+    }
 
     #endregion Lobby
 
@@ -58,6 +70,12 @@ public class Manager : MonoBehaviour
 
     void Start()
     {
+        mainmenu.SetActive(true);
+        join.SetActive(false);
+        lobby.SetActive(false);
+        game.SetActive(false);
+
+
         addressfield = ipaddressfield.GetComponent<InputField>();
         addressfield.text = "127.0.0.1";
     }
@@ -78,13 +96,14 @@ public class Manager : MonoBehaviour
         client = clientobj.GetComponent<Client>();
         mainmenu.SetActive(false);
         join.SetActive(true);
-
     }
     public void Connect()
     {
         Debug.Log("Addressfield: " + addressfield.text);
         client.Connect(addressfield.text);
+        isserver = false;
         join.SetActive(false);
+        InitLobbySettings();
         lobby.SetActive(true);
     }
 }
