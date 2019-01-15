@@ -21,10 +21,12 @@ public class Manager : MonoBehaviour
 
     //Lobby settings
     #region Lobby 
-    Settings settings = new Settings();
+    public Settings settings = new Settings();
 
     [SerializeField]
     Text[] counters;
+
+    public int msgsize = 1024;
 
     void InitLobbySettings()
     {
@@ -52,6 +54,56 @@ public class Manager : MonoBehaviour
             counters[i].text = settings.array[i].ToString();
     }
 
+    public void SetButtonPlus(int number){
+        switch (number){
+            case 0: settings.SetBonusRes(1); break;
+            case 1: settings.SetDistance(1); break;
+            case 2: settings.SetSkillBonus(1); break;
+            case 3: settings.SetCrisisStr(1); break;
+            case 4: settings.SetMaxRaider(1); break;
+            case 5: settings.SetMaxHeavyRaider(1); break;
+            case 6: settings.SetMaxBattleStar(1); break;
+            case 7: settings.SetViper(1); break;
+            case 8: settings.SetRaptors(1); break;
+            case 9: settings.SetDmgGalactica(1); break;
+            case 10: settings.SetBoardingParty(1); break;
+            case 11: settings.SetJumPrepRed(1); break;
+            case 12: settings.SetJumpPopLoss(1); break;
+            //case 14: settings. (1); break;
+            //case 15: settings. (1); break;
+        }
+        server.SentToAllClient(settings.SettingToSend());
+        SetActualSettings();
+    }
+    public void SetButtonMinus(int number){
+        switch (number){
+            case 0: settings.SetBonusRes(-1); break;
+            case 1: settings.SetDistance(-1); break;
+            case 2: settings.SetSkillBonus(-1); break;
+            case 3: settings.SetCrisisStr(-1); break;
+            case 4: settings.SetMaxRaider(-1); break;
+            case 5: settings.SetMaxHeavyRaider(-1); break;
+            case 6: settings.SetMaxBattleStar(-1); break;
+            case 7: settings.SetViper(-1); break;
+            case 8: settings.SetRaptors(-1); break;
+            case 9: settings.SetDmgGalactica(-1); break;
+            case 10: settings.SetBoardingParty(-1); break;
+            case 11: settings.SetJumPrepRed(-1); break;
+            case 12: settings.SetJumpPopLoss(-1); break;
+                //case 14: settings. (1); break;
+                //case 15: settings. (1); break;
+        }
+        server.SentToAllClient(settings.SettingToSend());
+        SetActualSettings();
+    }
+
+
+
+    public void SetSettings(byte[] tmp)
+    {
+        settings.ReciveSetting(tmp);
+        SetActualSettings();
+    }
     #endregion Lobby
 
 
@@ -74,7 +126,6 @@ public class Manager : MonoBehaviour
         join.SetActive(false);
         lobby.SetActive(false);
         game.SetActive(false);
-
 
         addressfield = ipaddressfield.GetComponent<InputField>();
         addressfield.text = "127.0.0.1";

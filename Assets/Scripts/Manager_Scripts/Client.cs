@@ -25,7 +25,7 @@ public class Client : MonoBehaviour
 
     GameObject ui;
 
-
+    Manager manager;
 
     #region Lobby stuff
 
@@ -40,6 +40,7 @@ public class Client : MonoBehaviour
     void Start(){
         Init();
         ui = GameObject.Find("UI");
+        manager = GameObject.Find("UI").GetComponent<Manager>();
     }
     void Update(){
         UpdateMassage();
@@ -82,6 +83,7 @@ public class Client : MonoBehaviour
                 break;
             case NetworkEventType.DataEvent:
                 Debug.Log("<Client> The server sent data: " + recbuffer[0]);
+                TranslateMsg(recbuffer);
                 break;
             case NetworkEventType.ConnectEvent:
                 Debug.Log("<Client> Connection established."); break;
@@ -97,6 +99,36 @@ public class Client : MonoBehaviour
         buffer[0] = databyte;
 
         NetworkTransport.Send(hostid, connectionid, channel, buffer, 1024, out error);
+    }
+
+    void TranslateMsg(byte[] tmp)
+    {
+        switch (tmp[0])
+        {
+            case 1:
+                switch (tmp[1])
+                {
+                    case 1:
+                        Debug.Log("Recived my number: " + tmp[2]);
+                        break;
+                    case 2:
+                        Debug.Log("Recived settings.");
+                        manager.SetSettings(tmp);
+                        break;
+                }
+
+                break;
+
+
+            case 2:
+                switch (tmp[1])
+                {
+                    case 1:
+
+                        break;
+                }
+                break;
+        }
     }
 
 }

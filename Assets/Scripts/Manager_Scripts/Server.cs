@@ -13,7 +13,11 @@ public class Server : MonoBehaviour
     byte error;
     int hostid;
     bool isstarted;
+
+    int msgsize = 1024;
+
     List<Client_data> clients;
+    Manager manager;
 
     void Start(){
         Init();
@@ -35,6 +39,12 @@ public class Server : MonoBehaviour
         clients.Add(new Client_data(0));
 
         Debug.Log("<{[SERVER STARTED]}>");
+
+
+        manager = GameObject.Find("UI").GetComponent<Manager>();
+
+
+
     }
 
     void UpdateMassage(){
@@ -43,7 +53,7 @@ public class Server : MonoBehaviour
 
         int rechostid, connectionid, channelid;
 
-        byte[] recbuffer = new byte[1024];
+        byte[] recbuffer = new byte[msgsize];
         int datasize;
 
         NetworkEventType etype = NetworkTransport.Receive(out rechostid, out connectionid, out channelid, recbuffer, 1024, out datasize, out error);
@@ -62,6 +72,10 @@ public class Server : MonoBehaviour
             case NetworkEventType.ConnectEvent:
                 Debug.Log("<SERVER> User[" + connectionid + "] connected.");
                 clients.Add(new Client_data(connectionid));
+                byte[] tmp = new byte[msgsize];
+                tmp[0] = 1; tmp[1] = 1; tmp[2] = (byte)connectionid;
+                SendToClient(connectionid, tmp);
+                SendToClient(connectionid, manager.settings.SettingToSend());
 
                 break;
             case NetworkEventType.DisconnectEvent:
@@ -79,6 +93,12 @@ public class Server : MonoBehaviour
     void SendToClient(int clientid, byte[] data)
     {
         NetworkTransport.Send(hostid, clientid, channel, data, 1024, out error);
+    }
+    public void SentToAllClient(byte[] data)
+    {
+        for(int i=0; i<clients.Count; i++)
+            if(clients[i].id != 0)
+                SendToClient(clients[i].id, data);
     }
 
 }

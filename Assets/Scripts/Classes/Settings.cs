@@ -4,10 +4,6 @@ using UnityEngine;
 
 public class Settings 
 {
-    public sbyte bonusres = 0, distance = 8, skillbonus = 0, crisisextrastr = 0;
-    public sbyte maxraider = 16, maxheavyraider = 4, maxbattlestar = 2, viper = 8, raptor = 4;
-    public sbyte dmggalactica = 6, boardingparty = 5, jumpprepred = 2, jumppoploss = 0;
-
     public sbyte[] array = new sbyte[15];
 
     public Settings()
@@ -38,15 +34,15 @@ public class Settings
             array[0]--;
     }
     public void SetDistance(int x){
-        if (x > 0 && array[1] < 13)
+        if (x > 0 && array[1] < 12)
             array[1]++;
-        else if (x < 0 && array[1] > 5)
+        else if (x < 0 && array[1] > 6)
             array[1]--;
     }
     public void SetSkillBonus(int x){
-        if (x > 0 && array[2] < 3)
+        if (x > 0 && array[2] < 2)
             array[2]++;
-        else if (x < 0 && array[2] > -2)
+        else if (x < 0 && array[2] > -1)
             array[2]--;
     }
     public void SetCrisisStr(int x){
@@ -56,40 +52,40 @@ public class Settings
             array[3]--;
     }
     public void SetMaxRaider(int x){
-        if (x > 0 && array[4] < 33)
+        if (x > 0 && array[4] < 32)
             array[4]++;
-        else if (x < 0 && array[4] > 7)
+        else if (x < 0 && array[4] > 8)
             array[4]--;
     }
     public void SetMaxHeavyRaider(int x){
-        if (x > 0 && array[5] < 9)
+        if (x > 0 && array[5] < 8)
             array[5]++;
-        else if (x < 0 && array[5] > 1)
+        else if (x < 0 && array[5] > 2)
             array[5]--;
     }
     public void SetMaxBattleStar(int x){
-        if (x > 0 && array[6] < 33)
+        if (x > 0 && array[6] < 6)
             array[6]++;
-        else if (x < 0 && array[6] > 7)
+        else if (x < 0 && array[6] > 1)
             array[6]--;
     }
     public void SetViper(int x){
-        if (x > 0 && array[7] < 17)
+        if (x > 0 && array[7] < 16)
             array[7]++;
-        else if (x < 0 && array[7] > 3)
+        else if (x < 0 && array[7] > 4)
             array[7]--;
     }
     public void SetRaptors(int x){
-        if (x > 0 && array[8] < 33)
+        if (x > 0 && array[8] < 8)
             array[8]++;
-        else if (x < 0 && array[8] > 7)
+        else if (x < 0 && array[8] > 2)
             array[8]--;
     }
     public void SetDmgGalactica(int x)
     {
-        if (x > 0 && array[9] < 9)
+        if (x > 0 && array[9] < 8)
             array[9]++;
-        else if (x < 0 && array[9] > 3)
+        else if (x < 0 && array[9] > 4)
             array[9]--;
     }
     public void SetBoardingParty(int x)
@@ -101,9 +97,9 @@ public class Settings
     }
     public void SetJumPrepRed(int x)
     {
-        if (x > 0 && array[11] < 4)
+        if (x > 0 && array[11] < 3)
             array[11]++;
-        else if (x < 0 && array[11] > 30)
+        else if (x < 0 && array[11] > 1)
             array[11]--;
     }
     public void SetJumpPopLoss(int x)
@@ -126,7 +122,8 @@ public class Settings
 
 
     public byte[] SettingToSend(){
-        byte[] tmp = new byte[array.Length];
+        byte[] tmp = new byte[array.Length+2];
+        tmp[0] = 1; tmp[1] = 2;
         for (int i = 0; i < array.Length; i++)
             tmp[i + 2] = (byte) array[i];
         return tmp;
