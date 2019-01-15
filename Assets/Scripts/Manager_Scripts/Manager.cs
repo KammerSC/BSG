@@ -129,7 +129,7 @@ public class Manager : MonoBehaviour
 
         addressfield = ipaddressfield.GetComponent<InputField>();
         addressfield.text = "127.0.0.1";
-        myname = transform.GetChild(1).GetChild(4).GetComponent<InputField>();
+        myname = transform.GetChild(1).GetChild(3).GetComponent<InputField>();
         myname.text = "ASDAS";
     }
 
