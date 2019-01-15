@@ -110,6 +110,8 @@ public class Client : MonoBehaviour
                 {
                     case 1:
                         Debug.Log("Recived my number: " + tmp[2]);
+
+
                         break;
                     case 2:
                         Debug.Log("Recived settings.");

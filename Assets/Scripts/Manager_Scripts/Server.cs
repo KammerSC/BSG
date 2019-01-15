@@ -4,6 +4,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections.Generic;
+using System;
 
 public class Server : MonoBehaviour
 {
@@ -65,6 +66,7 @@ public class Server : MonoBehaviour
                 Debug.Log("<SERVER> User[" + connectionid + "] sent data: buffer[0]: " + recbuffer[0]);
                 recbuffer[0]++;
                 SendToClient(connectionid, recbuffer);
+                ServerTranslate(recbuffer);
                 Debug.Log("<SERVER> Data sent to User[" + connectionid + "]");
                 break;
 
@@ -90,6 +92,26 @@ public class Server : MonoBehaviour
         }
     }
 
+    void ServerTranslate(byte[] recbuffer)
+    {
+        switch (recbuffer[0])
+        {
+            case 1:
+                switch (recbuffer[1])
+                {
+
+                }
+                break;
+
+
+
+        }
+
+
+
+
+    }
+
     void SendToClient(int clientid, byte[] data)
     {
         NetworkTransport.Send(hostid, clientid, channel, data, 1024, out error);
@@ -100,5 +122,6 @@ public class Server : MonoBehaviour
             if(clients[i].id != 0)
                 SendToClient(clients[i].id, data);
     }
+
 
 }

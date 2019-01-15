@@ -11,7 +11,7 @@ public class Manager : MonoBehaviour
     [SerializeField]
     GameObject mainmenu, host, join, lobby, game;
 
-    InputField addressfield;
+    InputField addressfield, myname;
 
     [SerializeField]
     GameObject serverpf, clientpf, ipaddressfield;
@@ -129,6 +129,8 @@ public class Manager : MonoBehaviour
 
         addressfield = ipaddressfield.GetComponent<InputField>();
         addressfield.text = "127.0.0.1";
+        myname = transform.GetChild(1).GetChild(4).GetComponent<InputField>();
+        myname.text = "ASDAS";
     }
 
 
