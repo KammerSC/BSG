@@ -92,15 +92,15 @@ public class Client : MonoBehaviour
 
         }
     }
-    public void SendToServer()
+
+
+
+
+
+    public void SendToServer(byte[] data)
     {
-        databyte++;
-        byte[] buffer = new byte[1024];
-        buffer[0] = databyte;
-
-        NetworkTransport.Send(hostid, connectionid, channel, buffer, 1024, out error);
+        NetworkTransport.Send(hostid, connectionid, channel, data, 1024, out error);
     }
-
     void TranslateMsg(byte[] tmp)
     {
         switch (tmp[0])
@@ -132,5 +132,6 @@ public class Client : MonoBehaviour
                 break;
         }
     }
+
 
 }

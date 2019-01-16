@@ -19,7 +19,19 @@ public class Manager : MonoBehaviour
     GameObject serverobj, clientobj; 
     Client client; Server server;
 
-    //Lobby settings
+
+    #region Main Menu
+    
+    void RandomNameAtStart()
+    {
+        string[] randomname = {"Macauly", "Caldwell", "Nana",  "Sheldon", "Louise",  "Browning", "Katya",  "Ireland", "Conor", "Dotson", "Carol", "John", "Polly", "Duran",
+        "Corrina",  "Ford", "Abbas", "Yoder", "Brendon",  "Warren" };
+        myname = transform.GetChild(0).GetChild(3).GetComponent<InputField>();
+        myname.text = randomname[new System.Random().Next()%randomname.Length];
+    }
+
+
+    #endregion
     #region Lobby 
     public Settings settings = new Settings();
 
@@ -30,18 +42,19 @@ public class Manager : MonoBehaviour
 
     void InitLobbySettings()
     {
-        counters = new Text[lobby.transform.childCount - 4];
-        for(int i=4; i< lobby.transform.childCount; i++)
-            counters[i-4] = lobby.transform.GetChild(i).transform.GetChild(0).GetComponent<Text>();
+        int x = lobby.transform.GetChild(0).transform.childCount;
+        counters = new Text[x - 4];
+        for(int i=4; i < x; i++)
+            counters[i-4] = lobby.transform.GetChild(0).transform.GetChild(i).transform.GetChild(0).GetComponent<Text>();
 
         if (isserver == false){
             Debug.Log("isserver: " + isserver);
             for(int i=0; i<lobby.transform.childCount; i++){
                 if (i < 4)
-                    lobby.transform.GetChild(i).gameObject.SetActive(false);
+                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.SetActive(false);
                 else{
-                    lobby.transform.GetChild(i).gameObject.transform.GetChild(1).gameObject.SetActive(false);
-                    lobby.transform.GetChild(i).gameObject.transform.GetChild(2).gameObject.SetActive(false);
+                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.transform.GetChild(1).gameObject.SetActive(false);
+                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.transform.GetChild(2).gameObject.SetActive(false);
                 }
             }
             
@@ -97,13 +110,31 @@ public class Manager : MonoBehaviour
         SetActualSettings();
     }
 
-
-
     public void SetSettings(byte[] tmp)
     {
         settings.ReciveSetting(tmp);
         SetActualSettings();
     }
+
+
+
+
+    Dropdown[] dropdowns = new Dropdown[10];
+    void InitUserPart()
+    {
+        dropdowns[0] = lobby.transform.GetComponentInChildren<Dropdown>();
+    }
+
+
+
+    public void SelectOnchange()
+    {
+
+
+
+        Debug.Log(dropdowns[0].value);
+    }
+
     #endregion Lobby
 
 
@@ -122,15 +153,15 @@ public class Manager : MonoBehaviour
 
     void Start()
     {
+        RandomNameAtStart();
         mainmenu.SetActive(true);
         join.SetActive(false);
         lobby.SetActive(false);
         game.SetActive(false);
 
         addressfield = ipaddressfield.GetComponent<InputField>();
-        addressfield.text = "127.0.0.1";
-        myname = transform.GetChild(1).GetChild(3).GetComponent<InputField>();
-        myname.text = "ASDAS";
+        addressfield.text = "192.168.0.100";
+        
     }
 
 
@@ -142,6 +173,7 @@ public class Manager : MonoBehaviour
         isserver = true;
         mainmenu.SetActive(false);
         InitLobbySettings();
+        InitUserPart();
         lobby.SetActive(true);
     }
     public void Join(){

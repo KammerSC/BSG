@@ -4,11 +4,24 @@ using UnityEngine;
 
 public class Client_data 
 {
-    public int id;
+    public byte id, serialnum, prefchar;
+    public string name;
+
+
+    public Client_data()
+    {
+
+    }
+
 
     public Client_data(int id)
     {
-        this.id = id;
+        this.id = (byte)id;
     }
 
+    public void SetName(string newname)
+    {
+        name = newname;
+
+    }
 }
