@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -118,23 +119,68 @@ public class Manager : MonoBehaviour
 
 
 
-
+    #region Clientlist 
+    GameObject[] userrow = new GameObject[10];
     Dropdown[] dropdowns = new Dropdown[10];
+    Toggle[] readycheck = new Toggle[10];
+
+    public Client_data myclient = new Client_data();
+    public List<Client_data> alluser = new List<Client_data>();
+
     void InitUserPart()
     {
-        dropdowns[0] = lobby.transform.GetComponentInChildren<Dropdown>();
+        myclient.name = myname.text;
+        for (int i = 0; i < 10; i++)
+        {
+            userrow[i] = lobby.transform.GetChild(1).transform.GetChild(i).gameObject;
+            dropdowns[i] = userrow[i].GetComponentInChildren<Dropdown>();
+            readycheck[i] = userrow[i].GetComponentInChildren<Toggle>();
+            readycheck[i].isOn = false;
+
+        }
+        
+    }
+    public void UpdateUserRow()
+    {
+        for(int i=0; i<10; i++)
+        {
+
+        }
     }
 
 
+    public void SetUserrow(Client_data cd)
+    {
+
+
+    }
+    public void UpdateUser(byte i)
+    {
+
+    }
+    public void AddUser(byte[] tmp)
+    {
+        byte[] bytes = new byte[200];
+        for (int i = 0; i < 200; i++)
+            bytes[i] = tmp[i + 3];
+        Client_data cdtmp = new Client_data(tmp[2]);
+        cdtmp.name = Encoding.ASCII.GetString(bytes);
+        alluser.Add(cdtmp);
+        UpdateUser(tmp[2]);
+    }
+    public void AddNameToUser(int id, string name)
+    {
+        for (int i = 0; i < alluser.Count; i++)
+            if (alluser[i].id == id)
+                alluser[i].name = name;
+
+    }
 
     public void SelectOnchange()
     {
 
-
-
-        Debug.Log(dropdowns[0].value);
     }
-
+    #endregion Clientlist
     #endregion Lobby
 
 

@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections.Generic;
 using System;
+using System.Text;
 
 public class Server : MonoBehaviour
 {
@@ -63,8 +64,6 @@ public class Server : MonoBehaviour
                 //Debug.Log("<SERVER> Nothing.");
                 break;
             case NetworkEventType.DataEvent:
-                Debug.Log("<SERVER> User[" + connectionid + "] sent data: buffer[0]: " + recbuffer[0]);
-                recbuffer[0]++;
                 SendToClient(connectionid, recbuffer);
                 ServerTranslate(recbuffer);
                 Debug.Log("<SERVER> Data sent to User[" + connectionid + "]");
@@ -78,6 +77,9 @@ public class Server : MonoBehaviour
                 tmp[0] = 1; tmp[1] = 1; tmp[2] = (byte)connectionid;
                 SendToClient(connectionid, tmp);
                 SendToClient(connectionid, manager.settings.SettingToSend());
+                //többi kliensadat küldése
+
+
 
                 break;
             case NetworkEventType.DisconnectEvent:
@@ -99,6 +101,15 @@ public class Server : MonoBehaviour
             case 1:
                 switch (recbuffer[1])
                 {
+                    case 1:
+                        byte[] bytes = new byte[200];
+                        for (int i = 0; i < 200; i++)
+                            bytes[i] = recbuffer[i + 3];
+                        manager.AddNameToUser(recbuffer[2], Encoding.ASCII.GetString(bytes));
+                        SendToClient(recbuffer[2], manager.settings.SettingToSend());
+
+                        break;
+
 
                 }
                 break;
@@ -110,6 +121,22 @@ public class Server : MonoBehaviour
 
 
 
+    }
+    void ServerSendByCode(int x, int y)
+    {
+        switch (x)
+        {
+            case 1:
+                switch (y){
+                    case 1:
+
+                        break;
+
+                    }
+
+                break;
+
+        }
     }
 
     void SendToClient(int clientid, byte[] data)

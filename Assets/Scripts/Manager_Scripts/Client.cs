@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System;
+using System.Text;
 
 public class Client : MonoBehaviour
 {
@@ -92,11 +93,6 @@ public class Client : MonoBehaviour
 
         }
     }
-
-
-
-
-
     public void SendToServer(byte[] data)
     {
         NetworkTransport.Send(hostid, connectionid, channel, data, 1024, out error);
@@ -110,12 +106,25 @@ public class Client : MonoBehaviour
                 {
                     case 1:
                         Debug.Log("Recived my number: " + tmp[2]);
-
-
+                        manager.myclient.id = tmp[2];
+                        byte[] bytes = Encoding.ASCII.GetBytes(manager.myclient.name);
+                        byte[] data = new byte[manager.msgsize];
+                        data[0] = 1; data[1] = 1; data[2] = manager.myclient.id;
+                        for (int i = 3; i < 203; i++)
+                            data[i] = bytes[i - 3];
+                        SendToServer(data);
                         break;
                     case 2:
                         Debug.Log("Recived settings.");
                         manager.SetSettings(tmp);
+                        break;
+
+
+                    case 3:
+                        Debug.Log("Recived client data.");
+
+
+
                         break;
                 }
 
