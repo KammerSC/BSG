@@ -25,17 +25,7 @@ public class Client : MonoBehaviour
     byte databyte = 0;
 
     GameObject ui;
-
     Manager manager;
-
-    #region Lobby stuff
-
-
-
-
-
-    #endregion 
-
 
 
     void Start(){
@@ -107,12 +97,7 @@ public class Client : MonoBehaviour
                     case 1:
                         Debug.Log("Recived my number: " + tmp[2]);
                         manager.myclient.id = tmp[2];
-                        byte[] bytes = Encoding.ASCII.GetBytes(manager.myclient.name);
-                        byte[] data = new byte[manager.msgsize];
-                        data[0] = 1; data[1] = 1; data[2] = manager.myclient.id;
-                        for (int i = 3; i < 203; i++)
-                            data[i] = bytes[i - 3];
-                        SendToServer(data);
+                        SendToServer(manager.myclient.ClientDataToSend());
                         break;
                     case 2:
                         Debug.Log("Recived settings.");
@@ -122,9 +107,7 @@ public class Client : MonoBehaviour
 
                     case 3:
                         Debug.Log("Recived client data.");
-
-
-
+                        manager.AcceptClientData(tmp);
                         break;
                 }
 

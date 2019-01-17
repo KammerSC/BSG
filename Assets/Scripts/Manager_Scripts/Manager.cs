@@ -8,14 +8,12 @@ public class Manager : MonoBehaviour
 {
     public bool isserver = false;
     string address;
+    public int msgsize = 1024;
+
+    
 
     [SerializeField]
-    GameObject mainmenu, host, join, lobby, game;
-
-    InputField addressfield, myname;
-
-    [SerializeField]
-    GameObject serverpf, clientpf, ipaddressfield;
+    GameObject serverpf, clientpf;
 
     GameObject serverobj, clientobj; 
     Client client; Server server;
@@ -27,47 +25,22 @@ public class Manager : MonoBehaviour
     {
         string[] randomname = {"Macauly", "Caldwell", "Nana",  "Sheldon", "Louise",  "Browning", "Katya",  "Ireland", "Conor", "Dotson", "Carol", "John", "Polly", "Duran",
         "Corrina",  "Ford", "Abbas", "Yoder", "Brendon",  "Warren" };
-        myname = transform.GetChild(0).GetChild(3).GetComponent<InputField>();
-        myname.text = randomname[new System.Random().Next()%randomname.Length];
+        myclient.name = myname.text;
+    }
+    public void ChangeName()
+    {
+        myclient.name = myname.text;
     }
 
 
     #endregion
+
     #region Lobby 
     public Settings settings = new Settings();
+    public Client_data myclient = new Client_data();
+    public List<Client_data> alluser = new List<Client_data>();
 
-    [SerializeField]
-    Text[] counters;
-
-    public int msgsize = 1024;
-
-    void InitLobbySettings()
-    {
-        int x = lobby.transform.GetChild(0).transform.childCount;
-        counters = new Text[x - 4];
-        for(int i=4; i < x; i++)
-            counters[i-4] = lobby.transform.GetChild(0).transform.GetChild(i).transform.GetChild(0).GetComponent<Text>();
-
-        if (isserver == false){
-            Debug.Log("isserver: " + isserver);
-            for(int i=0; i<lobby.transform.childCount; i++){
-                if (i < 4)
-                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.SetActive(false);
-                else{
-                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.transform.GetChild(1).gameObject.SetActive(false);
-                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.transform.GetChild(2).gameObject.SetActive(false);
-                }
-            }
-            
-        }
-        SetActualSettings();
-    }
-    void SetActualSettings()
-    {
-        for (int i = 0; i < counters.Length - 2; i++)
-            counters[i].text = settings.array[i].ToString();
-    }
-
+ 
     public void SetButtonPlus(int number){
         switch (number){
             case 0: settings.SetBonusRes(1); break;
@@ -110,7 +83,11 @@ public class Manager : MonoBehaviour
         server.SentToAllClient(settings.SettingToSend());
         SetActualSettings();
     }
-
+    void SetActualSettings()
+    {
+        for (int i = 0; i < counters.Length - 2; i++)
+            counters[i].text = settings.array[i].ToString();
+    }
     public void SetSettings(byte[] tmp)
     {
         settings.ReciveSetting(tmp);
@@ -118,72 +95,142 @@ public class Manager : MonoBehaviour
     }
 
 
-
     #region Clientlist 
-    GameObject[] userrow = new GameObject[10];
-    Dropdown[] dropdowns = new Dropdown[10];
-    Toggle[] readycheck = new Toggle[10];
 
-    public Client_data myclient = new Client_data();
-    public List<Client_data> alluser = new List<Client_data>();
+    bool[] occupied = new bool[10];
 
-    void InitUserPart()
+
+    public void AcceptClientData(byte[] data)
     {
-        myclient.name = myname.text;
-        for (int i = 0; i < 10; i++)
-        {
-            userrow[i] = lobby.transform.GetChild(1).transform.GetChild(i).gameObject;
-            dropdowns[i] = userrow[i].GetComponentInChildren<Dropdown>();
-            readycheck[i] = userrow[i].GetComponentInChildren<Toggle>();
-            readycheck[i].isOn = false;
-
-        }
-        
-    }
-    public void UpdateUserRow()
-    {
-        for(int i=0; i<10; i++)
-        {
-
-        }
+        for(int i=0; i<alluser.Count; i++)
+            if(alluser[i].id == data[2])
+            {
+                alluser[i].SetClientByData(data);
+                return;
+            }
+        Client_data tmp = new Client_data();
+        tmp.SetClientByData(data);
+        alluser.Add(tmp);
     }
 
-
-    public void SetUserrow(Client_data cd)
-    {
-
-
-    }
-    public void UpdateUser(byte i)
-    {
-
-    }
-    public void AddUser(byte[] tmp)
-    {
-        byte[] bytes = new byte[200];
-        for (int i = 0; i < 200; i++)
-            bytes[i] = tmp[i + 3];
-        Client_data cdtmp = new Client_data(tmp[2]);
-        cdtmp.name = Encoding.ASCII.GetString(bytes);
-        alluser.Add(cdtmp);
-        UpdateUser(tmp[2]);
-    }
-    public void AddNameToUser(int id, string name)
-    {
-        for (int i = 0; i < alluser.Count; i++)
-            if (alluser[i].id == id)
-                alluser[i].name = name;
-
-    }
-
-    public void SelectOnchange()
-    {
-
-    }
     #endregion Clientlist
     #endregion Lobby
 
+    #region UI
 
+    /* UI's child objects */
+    GameObject mainmenu, join, lobby, game;
+
+    GameObject[] presets = new GameObject[4];
+    GameObject[] plusbuttons = new GameObject[15], minusbuttons = new GameObject[15];
+    GameObject[] userrow = new GameObject[10];
+
+
+    void FindUIElements(){
+        /* UI's child objects */
+        mainmenu = transform.GetChild(0).gameObject;
+        join = transform.GetChild(1).gameObject;
+        lobby = transform.GetChild(2).gameObject;
+        game = transform.GetChild(3).gameObject;
+
+
+        /* Lobby's child objects */
+        for (int i=0; i<15; i++){
+            plusbuttons[i] = lobby.transform.GetChild(0).GetChild(i + 4).GetChild(1).gameObject;
+            minusbuttons[i] = lobby.transform.GetChild(0).GetChild(i + 4).GetChild(2).gameObject;
+        }
+        for (int i = 0; i < 4; i++)
+            presets[i] = lobby.transform.GetChild(0).GetChild(i).gameObject;
+        for (int i = 0; i < 10; i++)
+            userrow[i] = lobby.transform.GetChild(1).GetChild(i).gameObject;
+
+
+
+            
+    }
+
+    InputField addressfield, myname;
+    Text[] counters = new Text[15];
+    Text[] names = new Text[10];
+    Dropdown[] dropdowns = new Dropdown[10];
+    Toggle[] readycheck = new Toggle[10];
+
+
+
+    void FindUIComponents()
+    {
+        myname = mainmenu.GetComponentInChildren<InputField>();
+        RandomNameAtStart();
+
+        addressfield = join.transform.GetChild(1).GetComponent<InputField>();
+        addressfield.text = "127.0.0.1";
+
+        for (int i = 4; i < 19; i++)
+            counters[i - 4] = lobby.transform.GetChild(0).transform.GetChild(i).transform.GetChild(0).GetComponent<Text>();
+        for (int i = 4; i < 10; i++){
+            names[i] = userrow[i].GetComponentInChildren<Text>();
+            dropdowns[i] = userrow[i].GetComponentInChildren<Dropdown>();
+            readycheck[i] = userrow[i].GetComponentInChildren<Toggle>();
+        }
+
+
+
+    }
+    void SetUpForServer()
+    {
+        serverobj = Instantiate(serverpf);
+        server = serverobj.GetComponent<Server>();
+        myclient.id = 0; myclient.name = myname.text;
+        alluser.Add(myclient);
+
+    }
+
+    void SetUpForClient()
+    {
+        for (int i = 0; i < 4; i++)
+            presets[i].SetActive(false);
+        for (int i = 0; i < 15; i++)
+        {
+            plusbuttons[i].SetActive(false);
+            minusbuttons[i].SetActive(false);
+        }
+    }
+
+    void Panelchange(int x)
+    {
+        switch (x)
+        {
+            case 1: //Main Menu
+                mainmenu.SetActive(true);
+                join.SetActive(false);
+                lobby.SetActive(false);
+                game.SetActive(false);
+                break;
+
+            case 2: //Join
+                mainmenu.SetActive(false);
+                join.SetActive(true);
+                lobby.SetActive(false);
+                game.SetActive(false);
+                break;
+            case 3: //Lobby
+                mainmenu.SetActive(false);
+                join.SetActive(false);
+                lobby.SetActive(true);
+                game.SetActive(false);
+                break;
+            case 4: //Lobby
+                mainmenu.SetActive(false);
+                join.SetActive(false);
+                lobby.SetActive(false);
+                game.SetActive(true);
+                break;
+
+        }
+    }
+
+
+    #endregion UI
 
 
 
@@ -199,43 +246,33 @@ public class Manager : MonoBehaviour
 
     void Start()
     {
-        RandomNameAtStart();
-        mainmenu.SetActive(true);
-        join.SetActive(false);
-        lobby.SetActive(false);
-        game.SetActive(false);
-
-        addressfield = ipaddressfield.GetComponent<InputField>();
-        addressfield.text = "192.168.0.100";
-        
+        FindUIElements();
+        FindUIComponents();
+        Panelchange(1);
     }
 
 
 
 
     public void Host(){
-        serverobj = Instantiate(serverpf);
-        server = serverobj.GetComponent<Server>();
+        
         isserver = true;
-        mainmenu.SetActive(false);
-        InitLobbySettings();
-        InitUserPart();
-        lobby.SetActive(true);
+        SetUpForServer();
+        Panelchange(3);
+        SetUpForServer();
     }
     public void Join(){
         clientobj = Instantiate(clientpf);
         client = clientobj.GetComponent<Client>();
-        mainmenu.SetActive(false);
-        join.SetActive(true);
+        Panelchange(2);
     }
     public void Connect()
     {
         Debug.Log("Addressfield: " + addressfield.text);
         client.Connect(addressfield.text);
         isserver = false;
-        join.SetActive(false);
-        InitLobbySettings();
-        lobby.SetActive(true);
+        Panelchange(3);
+        SetUpForClient();
     }
 }
 //

@@ -76,11 +76,6 @@ public class Server : MonoBehaviour
                 byte[] tmp = new byte[msgsize];
                 tmp[0] = 1; tmp[1] = 1; tmp[2] = (byte)connectionid;
                 SendToClient(connectionid, tmp);
-                SendToClient(connectionid, manager.settings.SettingToSend());
-                //többi kliensadat küldése
-
-
-
                 break;
             case NetworkEventType.DisconnectEvent:
                 Debug.Log("<SERVER> User[" + connectionid + "] disconnected.");
@@ -102,15 +97,19 @@ public class Server : MonoBehaviour
                 switch (recbuffer[1])
                 {
                     case 1:
-                        byte[] bytes = new byte[200];
-                        for (int i = 0; i < 200; i++)
-                            bytes[i] = recbuffer[i + 3];
-                        manager.AddNameToUser(recbuffer[2], Encoding.ASCII.GetString(bytes));
-                        SendToClient(recbuffer[2], manager.settings.SettingToSend());
 
                         break;
 
+                    case 3:
+                        Debug.Log("Recived client data.");
+                        manager.AcceptClientData(recbuffer);
+                        for(int i=0; i<manager.alluser.Count; i++)
+                        {
+                            SendToClient(recbuffer[3], manager.alluser[i].ClientDataToSend());
+                        }
+                        SendToClient(recbuffer[3], manager.settings.SettingToSend());
 
+                        break;
                 }
                 break;
 

@@ -31,11 +31,32 @@ public class Client_data
         else
             data[5] = 0;
 
+        data[6] = (byte)Encoding.ASCII.GetByteCount(name);
+
         byte[] nb = Encoding.ASCII.GetBytes(name);
         for (int i = 10, j=0; i < 205 && j<nb.Length; i++, j++)
             data[i] = nb[j];
 
 
         return data;
+    }
+
+    public void SetClientByData(byte[] data)
+    {
+        id = data[2]; serialnum = data[3]; prefchar = data[4];
+
+        if (data[5] == 1)
+            ready = true;
+        else
+            ready = false;
+        int namesize = data[6];
+        if (namesize > 252)
+            namesize = 252;
+        Debug.Log("namesize: " + namesize);
+        byte[] namebyte = new byte[namesize];
+        for (int i = 0; i < namesize; i++)
+            namebyte[i] = data[i + 10];
+
+        name = Encoding.ASCII.GetString(namebyte);
     }
 }
