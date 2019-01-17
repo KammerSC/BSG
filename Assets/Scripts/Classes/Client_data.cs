@@ -10,16 +10,15 @@ public class Client_data
     public bool ready = false;
 
 
-    public Client_data()
-    {
-
-    }
+    public Client_data(){}
 
 
-    public Client_data(int id)
-    {
+    public Client_data(int id){
         this.id = (byte)id;
     }
+
+
+
 
 
     public byte[] ClientDataToSend()
@@ -40,10 +39,11 @@ public class Client_data
 
         return data;
     }
-
     public void SetClientByData(byte[] data)
     {
-        id = data[2]; serialnum = data[3]; prefchar = data[4];
+        if (data[2] == id)
+            return;
+        serialnum = data[3]; prefchar = data[4];
 
         if (data[5] == 1)
             ready = true;
@@ -59,4 +59,26 @@ public class Client_data
 
         name = Encoding.ASCII.GetString(namebyte);
     }
+
+    public byte[] ClientNameToSend()
+    {
+        byte[] data = new byte[1024];
+        data[0] = 1; data[1] = 6; data[2] = id;
+        data[3] = (byte)Encoding.ASCII.GetByteCount(name);
+        byte[] nb = Encoding.ASCII.GetBytes(name);
+        for (int i = 4, j = 0; i < 204 && j < nb.Length; i++, j++)
+            data[i] = nb[j];
+
+        return data;
+    }
+    public byte[] ClientPrefCharToSend()
+    {
+        byte[] data = new byte[1024];
+        data[0] = 1; data[1] = 6; data[2] = id;
+        data[3] = prefchar;
+        return data;
+    }
+
+
+
 }

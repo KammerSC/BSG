@@ -124,6 +124,9 @@ public class Client : MonoBehaviour
                 break;
         }
     }
-
+    public void SendMyClientData()
+    {
+        SendToServer(manager.myclient.ClientDataToSend());
+    }
 
 }

@@ -25,6 +25,7 @@ public class Manager : MonoBehaviour
     {
         string[] randomname = {"Macauly", "Caldwell", "Nana",  "Sheldon", "Louise",  "Browning", "Katya",  "Ireland", "Conor", "Dotson", "Carol", "John", "Polly", "Duran",
         "Corrina",  "Ford", "Abbas", "Yoder", "Brendon",  "Warren" };
+        myname.text = randomname[new System.Random().Next() % randomname.Length];
         myclient.name = myname.text;
     }
     public void ChangeName()
@@ -100,18 +101,57 @@ public class Manager : MonoBehaviour
     bool[] occupied = new bool[10];
 
 
-    public void AcceptClientData(byte[] data)
-    {
+    public void AcceptClientData(byte[] data){
         for(int i=0; i<alluser.Count; i++)
-            if(alluser[i].id == data[2])
-            {
+            if(alluser[i].id == data[2]){
                 alluser[i].SetClientByData(data);
+                UpdateUserRows();
                 return;
             }
         Client_data tmp = new Client_data();
         tmp.SetClientByData(data);
         alluser.Add(tmp);
+        SortClientlistbyID();
+        UpdateUserRows();
     }
+    void UpdateUserRows(){
+        for(int i=0; i<10; i++){
+            if (i < alluser.Count){
+                userrow[i].SetActive(true);
+                names[i].text = alluser[i].name;
+                dropdowns[i].value = alluser[i].prefchar;
+                readycheck[i].isOn = alluser[i].ready;
+                if(alluser[i].id == myclient.id){
+                    dropdowns[i].interactable = true;
+                    readycheck[i].interactable = true;
+                }
+                else{
+                    dropdowns[i].interactable = false;
+                    readycheck[i].interactable = false;
+                }
+            }
+            else
+                userrow[i].SetActive(false);
+        }
+    }
+
+    void SortClientlistbyID()
+    {
+        if (alluser.Count < 2)
+            return;
+
+        for(int i=0; i<alluser.Count-1; i++)
+        {
+            if(alluser[i].id > alluser[i + 1].id)
+            {
+                Client_data tmp = alluser[i];
+                alluser[i] = alluser[i + 1];
+                alluser[i + 1] = tmp;
+            }            
+        }
+
+    }
+
 
     #endregion Clientlist
     #endregion Lobby
@@ -133,7 +173,6 @@ public class Manager : MonoBehaviour
         lobby = transform.GetChild(2).gameObject;
         game = transform.GetChild(3).gameObject;
 
-
         /* Lobby's child objects */
         for (int i=0; i<15; i++){
             plusbuttons[i] = lobby.transform.GetChild(0).GetChild(i + 4).GetChild(1).gameObject;
@@ -143,10 +182,6 @@ public class Manager : MonoBehaviour
             presets[i] = lobby.transform.GetChild(0).GetChild(i).gameObject;
         for (int i = 0; i < 10; i++)
             userrow[i] = lobby.transform.GetChild(1).GetChild(i).gameObject;
-
-
-
-            
     }
 
     InputField addressfield, myname;
@@ -155,9 +190,7 @@ public class Manager : MonoBehaviour
     Dropdown[] dropdowns = new Dropdown[10];
     Toggle[] readycheck = new Toggle[10];
 
-
-
-    void FindUIComponents()
+    void FindUIComponentsAndSet()
     {
         myname = mainmenu.GetComponentInChildren<InputField>();
         RandomNameAtStart();
@@ -167,14 +200,14 @@ public class Manager : MonoBehaviour
 
         for (int i = 4; i < 19; i++)
             counters[i - 4] = lobby.transform.GetChild(0).transform.GetChild(i).transform.GetChild(0).GetComponent<Text>();
-        for (int i = 4; i < 10; i++){
+        for (int i = 0; i < 10; i++){
             names[i] = userrow[i].GetComponentInChildren<Text>();
             dropdowns[i] = userrow[i].GetComponentInChildren<Dropdown>();
+            dropdowns[i].interactable = false;
             readycheck[i] = userrow[i].GetComponentInChildren<Toggle>();
+            readycheck[i].interactable = false;
         }
-
-
-
+        RandomNameAtStart();
     }
     void SetUpForServer()
     {
@@ -182,7 +215,7 @@ public class Manager : MonoBehaviour
         server = serverobj.GetComponent<Server>();
         myclient.id = 0; myclient.name = myname.text;
         alluser.Add(myclient);
-
+        SetActualSettings();
     }
 
     void SetUpForClient()
@@ -247,7 +280,7 @@ public class Manager : MonoBehaviour
     void Start()
     {
         FindUIElements();
-        FindUIComponents();
+        FindUIComponentsAndSet();
         Panelchange(1);
     }
 
@@ -259,7 +292,6 @@ public class Manager : MonoBehaviour
         isserver = true;
         SetUpForServer();
         Panelchange(3);
-        SetUpForServer();
     }
     public void Join(){
         clientobj = Instantiate(clientpf);

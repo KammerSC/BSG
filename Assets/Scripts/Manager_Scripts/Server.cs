@@ -28,6 +28,7 @@ public class Server : MonoBehaviour
         UpdateMassage();
     }
     public void Init(){
+        manager = GameObject.Find("UI").GetComponent<Manager>();
         NetworkTransport.Init();
 
         ConnectionConfig cc = new ConnectionConfig();
@@ -43,7 +44,7 @@ public class Server : MonoBehaviour
         Debug.Log("<{[SERVER STARTED]}>");
 
 
-        manager = GameObject.Find("UI").GetComponent<Manager>();
+        
 
 
 
@@ -103,12 +104,6 @@ public class Server : MonoBehaviour
                     case 3:
                         Debug.Log("Recived client data.");
                         manager.AcceptClientData(recbuffer);
-                        for(int i=0; i<manager.alluser.Count; i++)
-                        {
-                            SendToClient(recbuffer[3], manager.alluser[i].ClientDataToSend());
-                        }
-                        SendToClient(recbuffer[3], manager.settings.SettingToSend());
-
                         break;
                 }
                 break;
@@ -148,6 +143,5 @@ public class Server : MonoBehaviour
             if(clients[i].id != 0)
                 SendToClient(clients[i].id, data);
     }
-
 
 }
