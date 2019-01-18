@@ -2,18 +2,40 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Raider : MonoBehaviour
+public class Raider
 {
-    // Start is called before the first frame update
-    void Start()
+    public byte position;
+
+    public int tamad(int hajo, int dobas)
     {
-        
+        switch (hajo)
+        {
+            //civil
+            case 0:
+                {
+                    return 2;
+                }
+            //viper
+            case 1:
+                {
+                    if (dobas == 8)
+                        return 2;
+                    else if (dobas > 4)
+                        return 1;
+                    else
+                        return 0;
+                }
+            //galactica
+            default:
+                {
+
+                }
+        }
     }
 
-    // Update is called once per frame
+
     void Update()
     {
-        
+
     }
 }
-//test
