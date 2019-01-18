@@ -5,80 +5,164 @@ using UnityEngine;
 
 public class Client_data 
 {
-    public byte id, serialnum, prefchar = 0;
-    public string name;
-    public bool ready = false;
+    public byte count = 1;
+    public byte[] ids, prefchar, ready;
+    public string[] names;
 
+    public Client_data(byte myid, string myname)
+    {
+        ids = new byte[count];
+        prefchar = new byte[count];
+        ready = new byte[count];
+        names = new string[count];
+        ids[0] = myid;
+        names[0] = myname;
+        Kiirat();
+    }
+    public void Add(byte id){
 
-    public Client_data(){}
+        count++;
+        byte[] tids = new byte[count], tprefchar = new byte[count], tready = new byte[count];
+        string[] tnames = new string[count]; 
+        for (int i = 0; i < count - 1; i++){
+            tids[i] = ids[i];   tprefchar[i] = prefchar[i];
+            tready[i] = ready[i];   tnames[i] = names[i]; 
+        }
+        ids = tids; prefchar = tprefchar;
+        ready = tready; names = tnames;
+        ids[count - 1] = id;
+        SortByID();
+        //Kiirat();
+    }
+    public void Remove(byte id)
+    {
 
+    }
 
-    public Client_data(int id){
-        this.id = (byte)id;
+    void SetName(byte id, string name)
+    {
+        for (int i = 0; i < count; i++)
+            if (ids[i] == id)
+            {
+                names[id] = name;
+                return;
+            }
+    }
+    void SetPrefChar(byte id, byte cn)
+    {
+        for (int i = 0; i < count; i++)
+            if (ids[i] == id)
+            {
+                prefchar[id] = cn;
+                return;
+            }
+    }
+    void SetReady(byte id, byte rd)
+    {
+        for (int i = 0; i < count; i++)
+            if (ids[i] == id)
+            {
+                ready[id] = rd;
+                return;
+            }
+    }
+
+    public void Kiirat()
+    {
+        Debug.Log("--<< Client Data >>-- ");
+        Debug.Log("Entries: "+ count);
+        for(int i=0; i<count; i++)
+            Debug.Log("ID: " + ids[i] + " Pref.Char.: " + prefchar[i] + " Ready: " + ready[i] + " Name: " + names[i]);
+        Debug.Log("--<< Client Data >>-- ");
     }
 
 
-
-
-
-    public byte[] ClientDataToSend()
+    public byte[] ClientDataToSend(byte id)
     {
         byte[] data = new byte[1024];
-        data[0] = 1; data[1] = 3; data[2] = id; data[3] = serialnum; data[4] = prefchar;
-        if (ready)
-            data[5] = 1;
+        bool noid = true;
+        int index = 0;
+        for (int i = 0; i < count; i++)
+            if (ids[i] == id)
+            {
+                index = i;
+                noid = false;
+                break;
+            }
+        if (noid) {
+            data[0] = data[1] = 0;
+            return data;
+        }
+        data[0] = 1; data[1] = 3;
+        data[2] = ids[index]; data[3] = prefchar[index];
+        if(ready[index] == 1)
+            data[4] = 1;
         else
-            data[5] = 0;
+            data[4] = 0;
+        int l = Encoding.ASCII.GetByteCount(names[index]);
+        if (l > 200)
+            data[5] = 200;
+        else
+            data[5] = (byte) l;
 
-        data[6] = (byte)Encoding.ASCII.GetByteCount(name);
-
-        byte[] nb = Encoding.ASCII.GetBytes(name);
-        for (int i = 10, j=0; i < 205 && j<nb.Length; i++, j++)
-            data[i] = nb[j];
-
+        byte[] tmp = Encoding.ASCII.GetBytes(names[index]);
+        for (int i = 10, j = 0; i < 210 && j < data[5]; i++, j++)
+            data[i] = tmp[j];
 
         return data;
     }
-    public void SetClientByData(byte[] data)
+    public void AcceptData(byte[] data)
     {
-        if (data[2] == id)
+        if (data[0] != 1)
+        {
+            Debug.Log("<CLIENT> Bad Data recived with code: data[0] = " + data[0] + " data[1] = " + data[1]);
             return;
-        serialnum = data[3]; prefchar = data[4];
+        }
+        switch (data[1])
+        {
+            case 3:
+                #region 1:3
+                Debug.Log("Recived client data with [0]: " + data[0] + " [1]: " + data[1] + " [2]: " + data[2] + " [5]: " + data[5]);
+                for (int i = 0; i < count; i++)
+                    if (ids[i] == data[2]){
+                        Debug.Log("<CLIENT> Existing client record recived.");
+                        return;
+                    }
+                Add(data[2]);
+                byte[] tmp = new byte[data[5]];
+                for (int i = 10, j = 0; i < 210 && j < data[5]; i++, j++)
+                    tmp[j] = data[i];
+                SetName(data[2], Encoding.ASCII.GetString(tmp));
+                SetPrefChar(data[2], data[3]);
+                SetReady(data[2], data[4]);
+                Kiirat();
+                #endregion 1:3
+                break;
+            case 4:
+                #region 1:4
+                SetPrefChar(data[2], data[3]);
+                #endregion 1:4
+                break;
+            case 5:
+                #region 1:5
+                SetPrefChar(data[2], data[3]);
+                #endregion 1:5
+                break;
 
-        if (data[5] == 1)
-            ready = true;
-        else
-            ready = false;
-        int namesize = data[6];
-        if (namesize > 252)
-            namesize = 252;
-        Debug.Log("namesize: " + namesize);
-        byte[] namebyte = new byte[namesize];
-        for (int i = 0; i < namesize; i++)
-            namebyte[i] = data[i + 10];
-
-        name = Encoding.ASCII.GetString(namebyte);
+        }
     }
 
-    public byte[] ClientNameToSend()
-    {
-        byte[] data = new byte[1024];
-        data[0] = 1; data[1] = 6; data[2] = id;
-        data[3] = (byte)Encoding.ASCII.GetByteCount(name);
-        byte[] nb = Encoding.ASCII.GetBytes(name);
-        for (int i = 4, j = 0; i < 204 && j < nb.Length; i++, j++)
-            data[i] = nb[j];
 
-        return data;
+
+    void SortByID(){
+        for(int i = 0; i < count-1; i++ ){
+            if(ids[i] > ids[i + 1])
+            {
+                byte tmp = ids[i];  ids[i] = ids[i + 1];    ids[i + 1] = tmp;
+                tmp = prefchar[i];  prefchar[i] = prefchar[i + 1];  prefchar[i + 1] = tmp;
+                tmp = ready[i]; ready[i] = ready[i + 1]; ready[i + 1] = tmp;
+                string tname = names[i];    names[i] = names[i + 1];    names[i + 1] = tname;
+            }
+        }
     }
-    public byte[] ClientPrefCharToSend()
-    {
-        byte[] data = new byte[1024];
-        data[0] = 1; data[1] = 6; data[2] = id;
-        data[3] = prefchar;
-        return data;
-    }
-
-
-
 }

@@ -10,6 +10,10 @@ public class Manager : MonoBehaviour
     string address;
     public int msgsize = 1024;
 
+    public byte myid = 0;
+    public string myname;
+    int myindex = 0;
+
     
 
     [SerializeField]
@@ -25,12 +29,11 @@ public class Manager : MonoBehaviour
     {
         string[] randomname = {"Macauly", "Caldwell", "Nana",  "Sheldon", "Louise",  "Browning", "Katya",  "Ireland", "Conor", "Dotson", "Carol", "John", "Polly", "Duran",
         "Corrina",  "Ford", "Abbas", "Yoder", "Brendon",  "Warren" };
-        myname.text = randomname[new System.Random().Next() % randomname.Length];
-        myclient.name = myname.text;
+        namefield.text = randomname[new System.Random().Next() % randomname.Length];
     }
     public void ChangeName()
     {
-        myclient.name = myname.text;
+        myname = namefield.text;
     }
 
 
@@ -38,9 +41,7 @@ public class Manager : MonoBehaviour
 
     #region Lobby 
     public Settings settings = new Settings();
-    public Client_data myclient = new Client_data();
-    public List<Client_data> alluser = new List<Client_data>();
-
+    public Client_data clientdata;
  
     public void SetButtonPlus(int number){
         switch (number){
@@ -60,7 +61,7 @@ public class Manager : MonoBehaviour
             //case 14: settings. (1); break;
             //case 15: settings. (1); break;
         }
-        server.SentToAllClient(settings.SettingToSend());
+        server.SendToAllClient(settings.SettingToSend());
         SetActualSettings();
     }
     public void SetButtonMinus(int number){
@@ -81,7 +82,7 @@ public class Manager : MonoBehaviour
                 //case 14: settings. (1); break;
                 //case 15: settings. (1); break;
         }
-        server.SentToAllClient(settings.SettingToSend());
+        server.SendToAllClient(settings.SettingToSend());
         SetActualSettings();
     }
     void SetActualSettings()
@@ -98,60 +99,51 @@ public class Manager : MonoBehaviour
 
     #region Clientlist 
 
-    bool[] occupied = new bool[10];
-
-
-    public void AcceptClientData(byte[] data){
-        for(int i=0; i<alluser.Count; i++)
-            if(alluser[i].id == data[2]){
-                alluser[i].SetClientByData(data);
-                UpdateUserRows();
-                return;
-            }
-        Client_data tmp = new Client_data();
-        tmp.SetClientByData(data);
-        alluser.Add(tmp);
-        SortClientlistbyID();
-        UpdateUserRows();
-    }
-    void UpdateUserRows(){
-        for(int i=0; i<10; i++){
-            if (i < alluser.Count){
+    public void SetUpClientrows()
+    {
+        for(int i=0; i<10; i++)
+        {
+            if (i < clientdata.count)
+            {
                 userrow[i].SetActive(true);
-                names[i].text = alluser[i].name;
-                dropdowns[i].value = alluser[i].prefchar;
-                readycheck[i].isOn = alluser[i].ready;
-                if(alluser[i].id == myclient.id){
+                names[i].text = clientdata.names[i];
+                if (myid == clientdata.ids[i]) {
+                    myindex = i;
                     dropdowns[i].interactable = true;
                     readycheck[i].interactable = true;
                 }
-                else{
+                else {
                     dropdowns[i].interactable = false;
                     readycheck[i].interactable = false;
                 }
+
             }
             else
                 userrow[i].SetActive(false);
         }
+        clientdata.Kiirat();
     }
-
-    void SortClientlistbyID()
+    public void UpdateUserPrefchar(byte id)
     {
-        if (alluser.Count < 2)
-            return;
-
-        for(int i=0; i<alluser.Count-1; i++)
-        {
-            if(alluser[i].id > alluser[i + 1].id)
+        for (int i = 0; i < clientdata.count; i++)
+            if (clientdata.ids[i] == id)
             {
-                Client_data tmp = alluser[i];
-                alluser[i] = alluser[i + 1];
-                alluser[i + 1] = tmp;
-            }            
-        }
-
+                dropdowns[i].value = clientdata.prefchar[i];
+                return;
+            }
     }
-
+    public void UpdateUserReady(byte id)
+    {
+        for (int i = 0; i < clientdata.count; i++)
+            if (clientdata.ids[i] == id)
+            {
+                if(clientdata.ready[i] == 1)
+                    readycheck[i].isOn = true;
+                else
+                    readycheck[i].isOn = false;
+                return;
+            }
+    }
 
     #endregion Clientlist
     #endregion Lobby
@@ -184,7 +176,7 @@ public class Manager : MonoBehaviour
             userrow[i] = lobby.transform.GetChild(1).GetChild(i).gameObject;
     }
 
-    InputField addressfield, myname;
+    InputField addressfield, namefield;
     Text[] counters = new Text[15];
     Text[] names = new Text[10];
     Dropdown[] dropdowns = new Dropdown[10];
@@ -192,7 +184,7 @@ public class Manager : MonoBehaviour
 
     void FindUIComponentsAndSet()
     {
-        myname = mainmenu.GetComponentInChildren<InputField>();
+        namefield = mainmenu.GetComponentInChildren<InputField>();
         RandomNameAtStart();
 
         addressfield = join.transform.GetChild(1).GetComponent<InputField>();
@@ -213,11 +205,12 @@ public class Manager : MonoBehaviour
     {
         serverobj = Instantiate(serverpf);
         server = serverobj.GetComponent<Server>();
-        myclient.id = 0; myclient.name = myname.text;
-        alluser.Add(myclient);
+
+        clientdata = new Client_data(myid, myname);
+
+        SetUpClientrows();
         SetActualSettings();
     }
-
     void SetUpForClient()
     {
         for (int i = 0; i < 4; i++)
@@ -267,25 +260,12 @@ public class Manager : MonoBehaviour
 
 
 
-
-
-
-
-
-
-
-
-
-
     void Start()
     {
         FindUIElements();
         FindUIComponentsAndSet();
         Panelchange(1);
     }
-
-
-
 
     public void Host(){
         
@@ -300,11 +280,10 @@ public class Manager : MonoBehaviour
     }
     public void Connect()
     {
-        Debug.Log("Addressfield: " + addressfield.text);
+        //Debug.Log("Addressfield: " + addressfield.text);
         client.Connect(addressfield.text);
         isserver = false;
         Panelchange(3);
         SetUpForClient();
     }
 }
-//

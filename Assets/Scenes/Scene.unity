@@ -24296,6 +24296,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isserver: 0
   msgsize: 1024
+  myid: 0
+  myname: 
   serverpf: {fileID: 7399354674914066244, guid: d8a1a562d51501b4b8e850e2f86d2630,
     type: 3}
   clientpf: {fileID: 6843648446450290742, guid: e245ca212c9b3674abf97ab9e7cd9c27,

@@ -18,7 +18,6 @@ public class Server : MonoBehaviour
 
     int msgsize = 1024;
 
-    List<Client_data> clients;
     Manager manager;
 
     void Start(){
@@ -38,16 +37,7 @@ public class Server : MonoBehaviour
 
         Debug.Log("Opening port: " + port);
         isstarted = true;
-        clients = new List<Client_data>();
-        clients.Add(new Client_data(0));
-
         Debug.Log("<{[SERVER STARTED]}>");
-
-
-        
-
-
-
     }
 
     void UpdateMassage(){
@@ -65,7 +55,6 @@ public class Server : MonoBehaviour
                 //Debug.Log("<SERVER> Nothing.");
                 break;
             case NetworkEventType.DataEvent:
-                SendToClient(connectionid, recbuffer);
                 ServerTranslate(recbuffer);
                 Debug.Log("<SERVER> Data sent to User[" + connectionid + "]");
                 break;
@@ -73,42 +62,48 @@ public class Server : MonoBehaviour
             //--------------------
             case NetworkEventType.ConnectEvent:
                 Debug.Log("<SERVER> User[" + connectionid + "] connected.");
-                clients.Add(new Client_data(connectionid));
                 byte[] tmp = new byte[msgsize];
                 tmp[0] = 1; tmp[1] = 1; tmp[2] = (byte)connectionid;
                 SendToClient(connectionid, tmp);
                 break;
             case NetworkEventType.DisconnectEvent:
                 Debug.Log("<SERVER> User[" + connectionid + "] disconnected.");
-                for(int i=0; i<clients.Count; i++)
-                    if(clients[i].id == connectionid)
-                    {
-                        clients.RemoveAt(i);
-                        break;
-                    }
+
                 break;
         }
     }
 
-    void ServerTranslate(byte[] recbuffer)
+    void ServerTranslate(byte[] data)
     {
-        switch (recbuffer[0])
+        switch (data[0])
         {
             case 1:
-                switch (recbuffer[1])
+                switch (data[1])
                 {
                     case 1:
 
                         break;
 
                     case 3:
-                        Debug.Log("Recived client data.");
-                        manager.AcceptClientData(recbuffer);
+                        Debug.Log("Recived client data <ALL DATA>.");
+                        manager.clientdata.AcceptData(data);
+                        manager.SetUpClientrows();
+
+                        
+                        for (int i = 0; i < manager.clientdata.count; i++)
+                            SendToAllClient(manager.clientdata.ClientDataToSend(manager.clientdata.ids[i]));
+                        break;
+                    case 4:
+                        Debug.Log("Recived client data <PrefChar>.");
+
                         break;
                 }
                 break;
 
 
+            default:
+                Debug.Log("<SERVER> Default translate: data[0] = " + data[0] + " data[1] = " + data[1]);
+                break;
 
         }
 
@@ -137,11 +132,10 @@ public class Server : MonoBehaviour
     {
         NetworkTransport.Send(hostid, clientid, channel, data, 1024, out error);
     }
-    public void SentToAllClient(byte[] data)
+    public void SendToAllClient(byte[] data)
     {
-        for(int i=0; i<clients.Count; i++)
-            if(clients[i].id != 0)
-                SendToClient(clients[i].id, data);
+        for (int i = 0; i < manager.clientdata.count; i++)
+            if(manager.clientdata.ids[i] != manager.myid)
+                SendToClient(manager.clientdata.ids[i], data);
     }
-
 }

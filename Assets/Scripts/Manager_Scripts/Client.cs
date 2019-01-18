@@ -21,9 +21,6 @@ public class Client : MonoBehaviour
 
     #endregion
 
-
-    byte databyte = 0;
-
     GameObject ui;
     Manager manager;
 
@@ -87,35 +84,40 @@ public class Client : MonoBehaviour
     {
         NetworkTransport.Send(hostid, connectionid, channel, data, 1024, out error);
     }
-    void TranslateMsg(byte[] tmp)
+    void TranslateMsg(byte[] data)
     {
-        switch (tmp[0])
+        switch (data[0])
         {
             case 1:
-                switch (tmp[1])
+                switch (data[1])
                 {
                     case 1:
-                        Debug.Log("Recived my number: " + tmp[2]);
-                        manager.myclient.id = tmp[2];
-                        SendToServer(manager.myclient.ClientDataToSend());
+                        #region 1-1 case
+                        Debug.Log("<Client>Recived my number: " + data[2]);
+                        manager.myid = data[2];
+                        manager.clientdata = new Client_data(manager.myid, manager.myname);
+                        SendToServer(manager.clientdata.ClientDataToSend(manager.myid));
+                        #endregion 1-1 case
                         break;
                     case 2:
-                        Debug.Log("Recived settings.");
-                        manager.SetSettings(tmp);
+                        Debug.Log("<Client>Recived settings.");
+                        manager.SetSettings(data);
                         break;
-
 
                     case 3:
-                        Debug.Log("Recived client data.");
-                        manager.AcceptClientData(tmp);
+                        Debug.Log("<Client>Recived Client data.");
+                        manager.clientdata.AcceptData(data);
+                        manager.SetUpClientrows();
                         break;
+
+
                 }
 
                 break;
 
 
             case 2:
-                switch (tmp[1])
+                switch (data[1])
                 {
                     case 1:
 
@@ -123,10 +125,6 @@ public class Client : MonoBehaviour
                 }
                 break;
         }
-    }
-    public void SendMyClientData()
-    {
-        SendToServer(manager.myclient.ClientDataToSend());
     }
 
 }
