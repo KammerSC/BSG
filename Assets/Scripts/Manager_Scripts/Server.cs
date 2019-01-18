@@ -92,6 +92,7 @@ public class Server : MonoBehaviour
                         
                         for (int i = 0; i < manager.clientdata.count; i++)
                             SendToAllClient(manager.clientdata.ClientDataToSend(manager.clientdata.ids[i]));
+                        SendToAllClient(manager.settings.SettingToSend());
                         break;
                     case 4:
                         Debug.Log("Recived client data <PrefChar>.");
