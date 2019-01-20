@@ -154,6 +154,7 @@ public class Manager : MonoBehaviour
             server.SendToAllClient(tmp);
         else
             client.SendToServer(tmp);
+        SetPrefCharCard(dropdowns[myindex].value);
     }
     public void OnReadyChange()
     {
@@ -172,6 +173,12 @@ public class Manager : MonoBehaviour
 
 
     #endregion Clientlist
+
+    
+
+
+
+
     #endregion Lobby
 
     #region UI
@@ -182,7 +189,7 @@ public class Manager : MonoBehaviour
     GameObject[] presets = new GameObject[4];
     GameObject[] plusbuttons = new GameObject[15], minusbuttons = new GameObject[15];
     GameObject[] userrow = new GameObject[10];
-
+    public GameObject selectedchar;
 
     void FindUIElements(){
         /* UI's child objects */
@@ -200,6 +207,9 @@ public class Manager : MonoBehaviour
             presets[i] = lobby.transform.GetChild(0).GetChild(i).gameObject;
         for (int i = 0; i < 10; i++)
             userrow[i] = lobby.transform.GetChild(1).GetChild(i).gameObject;
+
+        selectedchar = lobby.transform.GetChild(2).gameObject;
+
     }
 
     InputField addressfield, namefield;
@@ -207,6 +217,9 @@ public class Manager : MonoBehaviour
     Text[] names = new Text[10];
     Dropdown[] dropdowns = new Dropdown[10];
     Toggle[] readycheck = new Toggle[10];
+    Image prefcharcard;
+    [SerializeField]
+    Sprite[] charcards;
 
     void FindUIComponentsAndSet()
     {
@@ -225,6 +238,9 @@ public class Manager : MonoBehaviour
             readycheck[i] = userrow[i].GetComponentInChildren<Toggle>();
             readycheck[i].interactable = false;
         }
+        selectedchar.SetActive(false);
+        prefcharcard = selectedchar.GetComponent<Image>();
+
         RandomNameAtStart();
     }
     void SetUpForServer()
@@ -236,6 +252,8 @@ public class Manager : MonoBehaviour
 
         SetUpClientrows();
         SetActualSettings();
+        selectedchar.SetActive(true);
+        SetPrefCharCard(dropdowns[myindex].value);
     }
     void SetUpForClient()
     {
@@ -246,6 +264,7 @@ public class Manager : MonoBehaviour
             plusbuttons[i].SetActive(false);
             minusbuttons[i].SetActive(false);
         }
+        SetPrefCharCard(dropdowns[myindex].value);
     }
 
     void Panelchange(int x)
@@ -280,7 +299,10 @@ public class Manager : MonoBehaviour
 
         }
     }
-
+    void SetPrefCharCard(int index)
+    {
+        prefcharcard.sprite = charcards[index];
+    }
 
     #endregion UI
 

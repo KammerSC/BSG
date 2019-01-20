@@ -104,6 +104,7 @@ public class Client : MonoBehaviour
                     case 2:
                         Debug.Log("<Client> 1-2 Recived settings.");
                         manager.SetSettings(data);
+                        manager.selectedchar.SetActive(true);
                         break;
 
                     case 3:
