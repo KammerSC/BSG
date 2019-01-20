@@ -1,0 +1,13 @@
+Szerver oldal fogadó kódok		
+		
+1	1	
+1	2	
+1	3	Teljes client_data-t küldött a kliens
+1	4	Client_data objektum preferált karakterszámát küldi a kliens
+1	5	Client_data objektum ready állapotát küldi a kliens
+1	6	Client_data objektum nevét küldi a kliens
+1	7	
+1	8	
+1	9	
+1	10	
+1	11	

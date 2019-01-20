@@ -32,7 +32,7 @@ public class Client_data
         ids[count - 1] = id;
         SortByID();
         //Kiirat();
-    }
+    } 
     public void Remove(byte id)
     {
         for(int i=0; i<count; i++)
