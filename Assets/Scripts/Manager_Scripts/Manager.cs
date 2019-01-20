@@ -8,14 +8,16 @@ public class Manager : MonoBehaviour
 {
     public bool isserver = false;
     string address;
+    public int msgsize = 1024;
+
+    public byte myid = 0;
+    public string myname;
+    int myindex = 0;
+
+    
 
     [SerializeField]
-    GameObject mainmenu, host, join, lobby, game;
-
-    InputField addressfield, myname;
-
-    [SerializeField]
-    GameObject serverpf, clientpf, ipaddressfield;
+    GameObject serverpf, clientpf;
 
     GameObject serverobj, clientobj; 
     Client client; Server server;
@@ -27,47 +29,20 @@ public class Manager : MonoBehaviour
     {
         string[] randomname = {"Macauly", "Caldwell", "Nana",  "Sheldon", "Louise",  "Browning", "Katya",  "Ireland", "Conor", "Dotson", "Carol", "John", "Polly", "Duran",
         "Corrina",  "Ford", "Abbas", "Yoder", "Brendon",  "Warren" };
-        myname = transform.GetChild(0).GetChild(3).GetComponent<InputField>();
-        myname.text = randomname[new System.Random().Next()%randomname.Length];
+        namefield.text = randomname[new System.Random().Next() % randomname.Length];
+    }
+    public void ChangeName()
+    {
+        myname = namefield.text;
     }
 
 
     #endregion
+
     #region Lobby 
     public Settings settings = new Settings();
-
-    [SerializeField]
-    Text[] counters;
-
-    public int msgsize = 1024;
-
-    void InitLobbySettings()
-    {
-        int x = lobby.transform.GetChild(0).transform.childCount;
-        counters = new Text[x - 4];
-        for(int i=4; i < x; i++)
-            counters[i-4] = lobby.transform.GetChild(0).transform.GetChild(i).transform.GetChild(0).GetComponent<Text>();
-
-        if (isserver == false){
-            Debug.Log("isserver: " + isserver);
-            for(int i=0; i<lobby.transform.childCount; i++){
-                if (i < 4)
-                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.SetActive(false);
-                else{
-                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.transform.GetChild(1).gameObject.SetActive(false);
-                    lobby.transform.GetChild(0).transform.GetChild(i).gameObject.transform.GetChild(2).gameObject.SetActive(false);
-                }
-            }
-            
-        }
-        SetActualSettings();
-    }
-    void SetActualSettings()
-    {
-        for (int i = 0; i < counters.Length - 2; i++)
-            counters[i].text = settings.array[i].ToString();
-    }
-
+    public Client_data clientdata;
+ 
     public void SetButtonPlus(int number){
         switch (number){
             case 0: settings.SetBonusRes(1); break;
@@ -86,7 +61,7 @@ public class Manager : MonoBehaviour
             //case 14: settings. (1); break;
             //case 15: settings. (1); break;
         }
-        server.SentToAllClient(settings.SettingToSend());
+        server.SendToAllClient(settings.SettingToSend());
         SetActualSettings();
     }
     public void SetButtonMinus(int number){
@@ -107,10 +82,14 @@ public class Manager : MonoBehaviour
                 //case 14: settings. (1); break;
                 //case 15: settings. (1); break;
         }
-        server.SentToAllClient(settings.SettingToSend());
+        server.SendToAllClient(settings.SettingToSend());
         SetActualSettings();
     }
-
+    void SetActualSettings()
+    {
+        for (int i = 0; i < counters.Length - 2; i++)
+            counters[i].text = settings.array[i].ToString();
+    }
     public void SetSettings(byte[] tmp)
     {
         settings.ReciveSetting(tmp);
@@ -118,124 +97,219 @@ public class Manager : MonoBehaviour
     }
 
 
-
     #region Clientlist 
-    GameObject[] userrow = new GameObject[10];
-    Dropdown[] dropdowns = new Dropdown[10];
-    Toggle[] readycheck = new Toggle[10];
 
-    public Client_data myclient = new Client_data();
-    public List<Client_data> alluser = new List<Client_data>();
-
-    void InitUserPart()
-    {
-        myclient.name = myname.text;
-        for (int i = 0; i < 10; i++)
-        {
-            userrow[i] = lobby.transform.GetChild(1).transform.GetChild(i).gameObject;
-            dropdowns[i] = userrow[i].GetComponentInChildren<Dropdown>();
-            readycheck[i] = userrow[i].GetComponentInChildren<Toggle>();
-            readycheck[i].isOn = false;
-
-        }
-        
-    }
-    public void UpdateUserRow()
+    public void SetUpClientrows()
     {
         for(int i=0; i<10; i++)
         {
+            if (i < clientdata.count)
+            {
+                userrow[i].SetActive(true);
+                names[i].text = clientdata.names[i];
+                if (myid == clientdata.ids[i]) {
+                    myindex = i;
+                    dropdowns[i].interactable = true;
+                    readycheck[i].interactable = true;
+                }
+                else {
+                    dropdowns[i].interactable = false;
+                    readycheck[i].interactable = false;
+                }
+            }
+            else
+                userrow[i].SetActive(false);
+        }
+        //clientdata.Kiirat();
+    }
+    public void UpdateUserPrefchar(byte id)
+    {
+        Debug.Log("<CLIENT> Prefered character dropdow update started.");
+        for (int i = 0; i < clientdata.count; i++)
+            if (clientdata.ids[i] == id)
+            {
+                dropdowns[i].value = clientdata.prefchar[i];
+                Debug.Log("<CLIENT> Prefered character dropdow update done.");
+                return;
+            }
+    }
+    public void UpdateUserReady(byte id)
+    {
+        for (int i = 0; i < clientdata.count; i++)
+            if (clientdata.ids[i] == id)
+            {
+                if(clientdata.ready[i] == 1)
+                    readycheck[i].isOn = true;
+                else
+                    readycheck[i].isOn = false;
+                return;
+            }
+    }
+    public void OnPrefCharChange()
+    {
+        clientdata.SetPrefChar(myid, (byte)dropdowns[myindex].value);
+        byte[] tmp = new byte [msgsize];
+        tmp[0] = 1; tmp[1] = 4; tmp[2] = myid; tmp[3] = (byte)dropdowns[myindex].value;
+        if (isserver)
+            server.SendToAllClient(tmp);
+        else
+            client.SendToServer(tmp);
+    }
+    public void OnReadyChange()
+    {
+        if(readycheck[myindex].isOn)
+            clientdata.SetReady(myid, 1);
+        else
+            clientdata.SetReady(myid, 0);
+        byte[] tmp = new byte[msgsize];
+        tmp[0] = 1; tmp[1] = 5; tmp[2] = myid; tmp[4] = clientdata.ready[myindex];
+        if (isserver)
+            server.SendToAllClient(tmp);
+        else
+            client.SendToServer(tmp);
+    }
+
+
+
+    #endregion Clientlist
+    #endregion Lobby
+
+    #region UI
+
+    /* UI's child objects */
+    GameObject mainmenu, join, lobby, game;
+
+    GameObject[] presets = new GameObject[4];
+    GameObject[] plusbuttons = new GameObject[15], minusbuttons = new GameObject[15];
+    GameObject[] userrow = new GameObject[10];
+
+
+    void FindUIElements(){
+        /* UI's child objects */
+        mainmenu = transform.GetChild(0).gameObject;
+        join = transform.GetChild(1).gameObject;
+        lobby = transform.GetChild(2).gameObject;
+        game = transform.GetChild(3).gameObject;
+
+        /* Lobby's child objects */
+        for (int i=0; i<15; i++){
+            plusbuttons[i] = lobby.transform.GetChild(0).GetChild(i + 4).GetChild(1).gameObject;
+            minusbuttons[i] = lobby.transform.GetChild(0).GetChild(i + 4).GetChild(2).gameObject;
+        }
+        for (int i = 0; i < 4; i++)
+            presets[i] = lobby.transform.GetChild(0).GetChild(i).gameObject;
+        for (int i = 0; i < 10; i++)
+            userrow[i] = lobby.transform.GetChild(1).GetChild(i).gameObject;
+    }
+
+    InputField addressfield, namefield;
+    Text[] counters = new Text[15];
+    Text[] names = new Text[10];
+    Dropdown[] dropdowns = new Dropdown[10];
+    Toggle[] readycheck = new Toggle[10];
+
+    void FindUIComponentsAndSet()
+    {
+        namefield = mainmenu.GetComponentInChildren<InputField>();
+        RandomNameAtStart();
+
+        addressfield = join.transform.GetChild(1).GetComponent<InputField>();
+        addressfield.text = "127.0.0.1";
+
+        for (int i = 4; i < 19; i++)
+            counters[i - 4] = lobby.transform.GetChild(0).transform.GetChild(i).transform.GetChild(0).GetComponent<Text>();
+        for (int i = 0; i < 10; i++){
+            names[i] = userrow[i].GetComponentInChildren<Text>();
+            dropdowns[i] = userrow[i].GetComponentInChildren<Dropdown>();
+            dropdowns[i].interactable = false;
+            readycheck[i] = userrow[i].GetComponentInChildren<Toggle>();
+            readycheck[i].interactable = false;
+        }
+        RandomNameAtStart();
+    }
+    void SetUpForServer()
+    {
+        serverobj = Instantiate(serverpf);
+        server = serverobj.GetComponent<Server>();
+
+        clientdata = new Client_data(myid, myname);
+
+        SetUpClientrows();
+        SetActualSettings();
+    }
+    void SetUpForClient()
+    {
+        for (int i = 0; i < 4; i++)
+            presets[i].SetActive(false);
+        for (int i = 0; i < 15; i++)
+        {
+            plusbuttons[i].SetActive(false);
+            minusbuttons[i].SetActive(false);
+        }
+    }
+
+    void Panelchange(int x)
+    {
+        switch (x)
+        {
+            case 1: //Main Menu
+                mainmenu.SetActive(true);
+                join.SetActive(false);
+                lobby.SetActive(false);
+                game.SetActive(false);
+                break;
+
+            case 2: //Join
+                mainmenu.SetActive(false);
+                join.SetActive(true);
+                lobby.SetActive(false);
+                game.SetActive(false);
+                break;
+            case 3: //Lobby
+                mainmenu.SetActive(false);
+                join.SetActive(false);
+                lobby.SetActive(true);
+                game.SetActive(false);
+                break;
+            case 4: //Lobby
+                mainmenu.SetActive(false);
+                join.SetActive(false);
+                lobby.SetActive(false);
+                game.SetActive(true);
+                break;
 
         }
     }
 
 
-    public void SetUserrow(Client_data cd)
-    {
-
-
-    }
-    public void UpdateUser(byte i)
-    {
-
-    }
-    public void AddUser(byte[] tmp)
-    {
-        byte[] bytes = new byte[200];
-        for (int i = 0; i < 200; i++)
-            bytes[i] = tmp[i + 3];
-        Client_data cdtmp = new Client_data(tmp[2]);
-        cdtmp.name = Encoding.ASCII.GetString(bytes);
-        alluser.Add(cdtmp);
-        UpdateUser(tmp[2]);
-    }
-    public void AddNameToUser(int id, string name)
-    {
-        for (int i = 0; i < alluser.Count; i++)
-            if (alluser[i].id == id)
-                alluser[i].name = name;
-
-    }
-
-    public void SelectOnchange()
-    {
-
-    }
-    #endregion Clientlist
-    #endregion Lobby
-
-
-
-
-
-
-
-
-
-
-
-
+    #endregion UI
 
 
 
     void Start()
     {
-        RandomNameAtStart();
-        mainmenu.SetActive(true);
-        join.SetActive(false);
-        lobby.SetActive(false);
-        game.SetActive(false);
-
-        addressfield = ipaddressfield.GetComponent<InputField>();
-        addressfield.text = "192.168.0.100";
-        
+        FindUIElements();
+        FindUIComponentsAndSet();
+        Panelchange(1);
     }
 
-
-
-
     public void Host(){
-        serverobj = Instantiate(serverpf);
-        server = serverobj.GetComponent<Server>();
+        
         isserver = true;
-        mainmenu.SetActive(false);
-        InitLobbySettings();
-        InitUserPart();
-        lobby.SetActive(true);
+        SetUpForServer();
+        Panelchange(3);
     }
     public void Join(){
         clientobj = Instantiate(clientpf);
         client = clientobj.GetComponent<Client>();
-        mainmenu.SetActive(false);
-        join.SetActive(true);
+        Panelchange(2);
     }
     public void Connect()
     {
-        Debug.Log("Addressfield: " + addressfield.text);
+        //Debug.Log("Addressfield: " + addressfield.text);
         client.Connect(addressfield.text);
         isserver = false;
-        join.SetActive(false);
-        InitLobbySettings();
-        lobby.SetActive(true);
+        Panelchange(3);
+        SetUpForClient();
     }
 }
-//

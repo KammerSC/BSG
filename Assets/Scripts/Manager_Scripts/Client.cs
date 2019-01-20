@@ -21,21 +21,8 @@ public class Client : MonoBehaviour
 
     #endregion
 
-
-    byte databyte = 0;
-
     GameObject ui;
-
     Manager manager;
-
-    #region Lobby stuff
-
-
-
-
-
-    #endregion 
-
 
 
     void Start(){
@@ -63,7 +50,7 @@ public class Client : MonoBehaviour
     {
         connectionid = NetworkTransport.Connect(hostid, serverip,  port, 0, out error);
 
-        Debug.Log("<Client>Connected to:" + serverip);
+        //Debug.Log("<Client>Connected to:" + serverip);
         isstarted = true;
     }
     void UpdateMassage()
@@ -83,13 +70,14 @@ public class Client : MonoBehaviour
                 //Debug.Log("<SERVER> Nothing.");
                 break;
             case NetworkEventType.DataEvent:
-                Debug.Log("<Client> The server sent data: " + recbuffer[0]);
                 TranslateMsg(recbuffer);
                 break;
             case NetworkEventType.ConnectEvent:
-                Debug.Log("<Client> Connection established."); break;
+                //Debug.Log("<Client> Connection established."); 
+                break;
             case NetworkEventType.DisconnectEvent:
-                Debug.Log("<Client> Connection terminated."); break;
+                Debug.Log("<Client> Connection terminated.");
+                break;
 
         }
     }
@@ -97,42 +85,59 @@ public class Client : MonoBehaviour
     {
         NetworkTransport.Send(hostid, connectionid, channel, data, 1024, out error);
     }
-    void TranslateMsg(byte[] tmp)
+    void TranslateMsg(byte[] data)
     {
-        switch (tmp[0])
+        switch (data[0])
         {
             case 1:
-                switch (tmp[1])
+                switch (data[1])
                 {
                     case 1:
-                        Debug.Log("Recived my number: " + tmp[2]);
-                        manager.myclient.id = tmp[2];
-                        byte[] bytes = Encoding.ASCII.GetBytes(manager.myclient.name);
-                        byte[] data = new byte[manager.msgsize];
-                        data[0] = 1; data[1] = 1; data[2] = manager.myclient.id;
-                        for (int i = 3; i < 203; i++)
-                            data[i] = bytes[i - 3];
-                        SendToServer(data);
+                        #region 1-1 case
+                        Debug.Log("<Client> 1-1 Recived my number: " + data[2]);
+                        manager.myid = data[2];
+                        manager.clientdata = new Client_data(manager.myid, manager.myname);
+                        SendToServer(manager.clientdata.ClientDataToSend(manager.myid));
+                        #endregion 1-1 case
                         break;
                     case 2:
-                        Debug.Log("Recived settings.");
-                        manager.SetSettings(tmp);
+                        Debug.Log("<Client> 1-2 Recived settings.");
+                        manager.SetSettings(data);
                         break;
-
 
                     case 3:
-                        Debug.Log("Recived client data.");
+                        Debug.Log("<Client> 1-3 Recived Client data (ALL DATA).");
+                        manager.clientdata.AcceptData(data);
+                        manager.SetUpClientrows();
+                        break;
 
-
+                    case 4:
+                        Debug.Log("<Client> 1-4 Recived Client data (PREFCHAR).");
+                        manager.clientdata.AcceptData(data);
+                        manager.UpdateUserPrefchar(data[2]);
 
                         break;
+
+                    case 5:
+                        Debug.Log("<Client> 1-5 Recived Client data (READY).");
+                        manager.clientdata.AcceptData(data);
+                        manager.UpdateUserReady(data[2]);
+                        break;
+
+                    case 10:
+                        Debug.Log("<Client> 1-10 Recived Client data.");
+                        manager.clientdata.AcceptData(data);
+                        manager.SetUpClientrows();
+                        break;
+
+
                 }
 
                 break;
 
 
             case 2:
-                switch (tmp[1])
+                switch (data[1])
                 {
                     case 1:
 
@@ -141,6 +146,5 @@ public class Client : MonoBehaviour
                 break;
         }
     }
-
 
 }
