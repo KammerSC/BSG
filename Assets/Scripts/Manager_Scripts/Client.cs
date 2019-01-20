@@ -50,7 +50,7 @@ public class Client : MonoBehaviour
     {
         connectionid = NetworkTransport.Connect(hostid, serverip,  port, 0, out error);
 
-        Debug.Log("<Client>Connected to:" + serverip);
+        //Debug.Log("<Client>Connected to:" + serverip);
         isstarted = true;
     }
     void UpdateMassage()
@@ -70,13 +70,14 @@ public class Client : MonoBehaviour
                 //Debug.Log("<SERVER> Nothing.");
                 break;
             case NetworkEventType.DataEvent:
-                Debug.Log("<Client> The server sent data: " + recbuffer[0]);
                 TranslateMsg(recbuffer);
                 break;
             case NetworkEventType.ConnectEvent:
-                Debug.Log("<Client> Connection established."); break;
+                //Debug.Log("<Client> Connection established."); 
+                break;
             case NetworkEventType.DisconnectEvent:
-                Debug.Log("<Client> Connection terminated."); break;
+                Debug.Log("<Client> Connection terminated.");
+                break;
 
         }
     }
@@ -93,19 +94,38 @@ public class Client : MonoBehaviour
                 {
                     case 1:
                         #region 1-1 case
-                        Debug.Log("<Client>Recived my number: " + data[2]);
+                        Debug.Log("<Client> 1-1 Recived my number: " + data[2]);
                         manager.myid = data[2];
                         manager.clientdata = new Client_data(manager.myid, manager.myname);
                         SendToServer(manager.clientdata.ClientDataToSend(manager.myid));
                         #endregion 1-1 case
                         break;
                     case 2:
-                        Debug.Log("<Client>Recived settings.");
+                        Debug.Log("<Client> 1-2 Recived settings.");
                         manager.SetSettings(data);
                         break;
 
                     case 3:
-                        Debug.Log("<Client>Recived Client data.");
+                        Debug.Log("<Client> 1-3 Recived Client data (ALL DATA).");
+                        manager.clientdata.AcceptData(data);
+                        manager.SetUpClientrows();
+                        break;
+
+                    case 4:
+                        Debug.Log("<Client> 1-4 Recived Client data (PREFCHAR).");
+                        manager.clientdata.AcceptData(data);
+                        manager.UpdateUserPrefchar(data[2]);
+
+                        break;
+
+                    case 5:
+                        Debug.Log("<Client> 1-5 Recived Client data (READY).");
+                        manager.clientdata.AcceptData(data);
+                        manager.UpdateUserReady(data[2]);
+                        break;
+
+                    case 10:
+                        Debug.Log("<Client> 1-10 Recived Client data.");
                         manager.clientdata.AcceptData(data);
                         manager.SetUpClientrows();
                         break;

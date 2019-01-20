@@ -116,19 +116,20 @@ public class Manager : MonoBehaviour
                     dropdowns[i].interactable = false;
                     readycheck[i].interactable = false;
                 }
-
             }
             else
                 userrow[i].SetActive(false);
         }
-        clientdata.Kiirat();
+        //clientdata.Kiirat();
     }
     public void UpdateUserPrefchar(byte id)
     {
+        Debug.Log("<CLIENT> Prefered character dropdow update started.");
         for (int i = 0; i < clientdata.count; i++)
             if (clientdata.ids[i] == id)
             {
                 dropdowns[i].value = clientdata.prefchar[i];
+                Debug.Log("<CLIENT> Prefered character dropdow update done.");
                 return;
             }
     }
@@ -144,6 +145,31 @@ public class Manager : MonoBehaviour
                 return;
             }
     }
+    public void OnPrefCharChange()
+    {
+        clientdata.SetPrefChar(myid, (byte)dropdowns[myindex].value);
+        byte[] tmp = new byte [msgsize];
+        tmp[0] = 1; tmp[1] = 4; tmp[2] = myid; tmp[3] = (byte)dropdowns[myindex].value;
+        if (isserver)
+            server.SendToAllClient(tmp);
+        else
+            client.SendToServer(tmp);
+    }
+    public void OnReadyChange()
+    {
+        if(readycheck[myindex].isOn)
+            clientdata.SetReady(myid, 1);
+        else
+            clientdata.SetReady(myid, 0);
+        byte[] tmp = new byte[msgsize];
+        tmp[0] = 1; tmp[1] = 5; tmp[2] = myid; tmp[4] = clientdata.ready[myindex];
+        if (isserver)
+            server.SendToAllClient(tmp);
+        else
+            client.SendToServer(tmp);
+    }
+
+
 
     #endregion Clientlist
     #endregion Lobby

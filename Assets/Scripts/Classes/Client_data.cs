@@ -17,10 +17,9 @@ public class Client_data
         names = new string[count];
         ids[0] = myid;
         names[0] = myname;
-        Kiirat();
+        //Kiirat();
     }
     public void Add(byte id){
-
         count++;
         byte[] tids = new byte[count], tprefchar = new byte[count], tready = new byte[count];
         string[] tnames = new string[count]; 
@@ -36,6 +35,29 @@ public class Client_data
     }
     public void Remove(byte id)
     {
+        for(int i=0; i<count; i++)
+        {
+            if(ids[i] == id)
+            {
+                count--;
+                for (int j = i; j < count; j++)
+                {
+                    ids[j] = ids[j + 1];prefchar[j] = prefchar[j + 1];
+                    ready[j] = ready[j + 1];names[j] = names[j + 1];
+                }
+                byte[] tids = new byte[count], tprefchar = new byte[count], tready = new byte[count];
+                string[] tnames = new string[count];
+                for (int j = 0; j < count; j++)
+                {
+                    tids[j] = ids[j]; tprefchar[j] = prefchar[j];
+                    tready[j] = ready[j]; tnames[j] = names[j];
+                }
+                ids = tids; prefchar = tprefchar;
+                ready = tready; names = tnames;
+                SortByID();
+                return;
+            }
+        }
 
     }
 
@@ -48,7 +70,7 @@ public class Client_data
                 return;
             }
     }
-    void SetPrefChar(byte id, byte cn)
+    public void SetPrefChar(byte id, byte cn)
     {
         for (int i = 0; i < count; i++)
             if (ids[i] == id)
@@ -57,7 +79,7 @@ public class Client_data
                 return;
             }
     }
-    void SetReady(byte id, byte rd)
+    public void SetReady(byte id, byte rd)
     {
         for (int i = 0; i < count; i++)
             if (ids[i] == id)
@@ -120,14 +142,15 @@ public class Client_data
         }
         switch (data[1])
         {
-            case 3:
+            case 3: //Add to client data
                 #region 1:3
-                Debug.Log("Recived client data with [0]: " + data[0] + " [1]: " + data[1] + " [2]: " + data[2] + " [5]: " + data[5]);
+                //Debug.Log("<CLIENT> Recived client data with [0]: " + data[0] + " [1]: " + data[1] + " [2]: " + data[2] + " [5]: " + data[5]);
                 for (int i = 0; i < count; i++)
                     if (ids[i] == data[2]){
                         Debug.Log("<CLIENT> Existing client record recived.");
                         return;
                     }
+                
                 Add(data[2]);
                 byte[] tmp = new byte[data[5]];
                 for (int i = 10, j = 0; i < 210 && j < data[5]; i++, j++)
@@ -135,17 +158,26 @@ public class Client_data
                 SetName(data[2], Encoding.ASCII.GetString(tmp));
                 SetPrefChar(data[2], data[3]);
                 SetReady(data[2], data[4]);
-                Kiirat();
+                Debug.Log("<CLIENT> Non-existing client record recived, added.");
+                //Kiirat();
                 #endregion 1:3
                 break;
-            case 4:
+            case 4://Set prefered character
                 #region 1:4
+                Debug.Log("<CLIENT> Prefered character update recived.");
                 SetPrefChar(data[2], data[3]);
                 #endregion 1:4
                 break;
-            case 5:
+            case 5://Set readiness
                 #region 1:5
-                SetPrefChar(data[2], data[3]);
+                Debug.Log("<CLIENT> Cient readiness update recived.");
+                SetReady(data[2], data[4]);
+                #endregion 1:5
+                break;
+            case 10://Delete a client by ID
+                #region 1:5
+                Debug.Log("<CLIENT> Client record removed.");
+                Remove(data[2]);
                 #endregion 1:5
                 break;
 

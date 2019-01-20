@@ -50,6 +50,7 @@ public class Server : MonoBehaviour
         int datasize;
 
         NetworkEventType etype = NetworkTransport.Receive(out rechostid, out connectionid, out channelid, recbuffer, 1024, out datasize, out error);
+        byte[] tmp;
         switch (etype){
             case NetworkEventType.Nothing:
                 //Debug.Log("<SERVER> Nothing.");
@@ -62,13 +63,17 @@ public class Server : MonoBehaviour
             //--------------------
             case NetworkEventType.ConnectEvent:
                 Debug.Log("<SERVER> User[" + connectionid + "] connected.");
-                byte[] tmp = new byte[msgsize];
+                tmp = new byte[manager.msgsize];
                 tmp[0] = 1; tmp[1] = 1; tmp[2] = (byte)connectionid;
                 SendToClient(connectionid, tmp);
                 break;
             case NetworkEventType.DisconnectEvent:
                 Debug.Log("<SERVER> User[" + connectionid + "] disconnected.");
-
+                manager.clientdata.Remove((byte)connectionid);
+                tmp = new byte[manager.msgsize];
+                tmp[0] = 1; tmp[1] = 10; tmp[2] = (byte)connectionid;
+                manager.SetUpClientrows();
+                SendToAllClient(tmp);
                 break;
         }
     }
@@ -95,8 +100,16 @@ public class Server : MonoBehaviour
                         SendToAllClient(manager.settings.SettingToSend());
                         break;
                     case 4:
-                        Debug.Log("Recived client data <PrefChar>.");
-
+                        Debug.Log("Recived client data <PREFCHAR>.");
+                        SendToAllClient(data);
+                        manager.clientdata.AcceptData(data);
+                        manager.UpdateUserPrefchar(data[2]);
+                        break;
+                    case 5:
+                        Debug.Log("Recived client data <READY>.");
+                        SendToAllClient(data);
+                        manager.clientdata.AcceptData(data);
+                        manager.UpdateUserReady(data[2]);
                         break;
                 }
                 break;
