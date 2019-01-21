@@ -306,17 +306,70 @@ public class Manager : MonoBehaviour
 
     #endregion UI
 
+    #region Log
+    [SerializeField]
+    GameObject scrdwn, scrup, scrtxt;
+    Text logobj;
+    int logoffset = 0;
+    List<string> logs = new List<string>();
+
+    void InitLogStuff()
+    {
+        logobj = scrtxt.GetComponent<Text>();
+    }
+    public void Log(string msg)
+    {
+        if (logs.Count == 100)
+            logs.RemoveAt(0);
+        StringBuilder sb = new StringBuilder();
+        System.DateTime time = System.DateTime.Now;
+        sb.Append(time.ToString("HH:mm:ss")).Append(" - ").Append(msg);
+        logs.Add(sb.ToString());
+        Debug.Log(sb.ToString());
+        if (logs.Count > 6)
+            logoffset = 4;
+        ShowLastFive();
+    }
+    void ShowLastFive()
+    {
+        if (logs.Count == 0)
+            return;
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = logs.Count - 1 - logoffset, j = 0; i < logs.Count && j < 5; i++, j++)
+            sb.AppendLine(logs[i]);
+
+        Debug.Log("offset: " +logoffset + " count: " + logs.Count);
+
+        logobj.text = sb.ToString();
+
+    }
+    public void LogPlus()
+    {
+        if (logoffset < logs.Count-1)
+            logoffset++;
+        ShowLastFive();
+    }
+    public void LogMinus()
+    {
+        if (logoffset > 4)
+            logoffset--;
+        ShowLastFive();
+    }
+
+    #endregion Log
 
 
     void Start()
     {
+        InitLogStuff();
         FindUIElements();
         FindUIComponentsAndSet();
+
         Panelchange(1);
     }
 
     public void Host(){
-        
         isserver = true;
         SetUpForServer();
         Panelchange(3);
