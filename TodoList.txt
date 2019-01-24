@@ -1,0 +1,5 @@
+joinnál minden kliens adat frissítése
+A log kezdettõl fogva az utolsó 5 felratot írja ki
+ready system
+between menü
+kilépés gomb

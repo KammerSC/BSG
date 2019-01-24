@@ -83,7 +83,7 @@ public class Client : MonoBehaviour
     }
     public void SendToServer(byte[] data)
     {
-        Debug.Log("<Client> Data Sent to server, data[0]: " + data[0] + " data[1]: "+data[1] );
+        manager.Log("<Client> Data Sent to server, data[0]: " + data[0] + " data[1]: "+data[1] );
         NetworkTransport.Send(hostid, connectionid, channel, data, 1024, out error);
     }
     void TranslateMsg(byte[] data)
@@ -104,6 +104,7 @@ public class Client : MonoBehaviour
                     case 2:
                         Debug.Log("<Client> 1-2 Recived settings.");
                         manager.SetSettings(data);
+                        manager.selectedchar.SetActive(true);
                         break;
 
                     case 3:

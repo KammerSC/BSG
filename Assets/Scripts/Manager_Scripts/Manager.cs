@@ -20,7 +20,8 @@ public class Manager : MonoBehaviour
     GameObject serverpf, clientpf;
 
     GameObject serverobj, clientobj; 
-    Client client; Server server;
+    public Client client; public Server server;
+    Game game;
 
 
     #region Main Menu
@@ -154,6 +155,7 @@ public class Manager : MonoBehaviour
             server.SendToAllClient(tmp);
         else
             client.SendToServer(tmp);
+        SetPrefCharCard(dropdowns[myindex].value);
     }
     public void OnReadyChange()
     {
@@ -172,24 +174,35 @@ public class Manager : MonoBehaviour
 
 
     #endregion Clientlist
+
+    
+    public void LaunchGame()
+    {
+        if (isserver == false)
+            return;
+        game = new Game(this, settings);
+    }
+
+
+
     #endregion Lobby
 
     #region UI
 
     /* UI's child objects */
-    GameObject mainmenu, join, lobby, game;
+    GameObject mainmenu, join, lobby, gamebutton;
 
     GameObject[] presets = new GameObject[4];
     GameObject[] plusbuttons = new GameObject[15], minusbuttons = new GameObject[15];
     GameObject[] userrow = new GameObject[10];
-
+    public GameObject selectedchar;
 
     void FindUIElements(){
         /* UI's child objects */
         mainmenu = transform.GetChild(0).gameObject;
         join = transform.GetChild(1).gameObject;
         lobby = transform.GetChild(2).gameObject;
-        game = transform.GetChild(3).gameObject;
+        gamebutton = transform.GetChild(3).gameObject;
 
         /* Lobby's child objects */
         for (int i=0; i<15; i++){
@@ -200,6 +213,9 @@ public class Manager : MonoBehaviour
             presets[i] = lobby.transform.GetChild(0).GetChild(i).gameObject;
         for (int i = 0; i < 10; i++)
             userrow[i] = lobby.transform.GetChild(1).GetChild(i).gameObject;
+
+        selectedchar = lobby.transform.GetChild(2).gameObject;
+
     }
 
     InputField addressfield, namefield;
@@ -207,6 +223,9 @@ public class Manager : MonoBehaviour
     Text[] names = new Text[10];
     Dropdown[] dropdowns = new Dropdown[10];
     Toggle[] readycheck = new Toggle[10];
+    Image prefcharcard;
+    [SerializeField]
+    Sprite[] charcards;
 
     void FindUIComponentsAndSet()
     {
@@ -225,6 +244,9 @@ public class Manager : MonoBehaviour
             readycheck[i] = userrow[i].GetComponentInChildren<Toggle>();
             readycheck[i].interactable = false;
         }
+        selectedchar.SetActive(false);
+        prefcharcard = selectedchar.GetComponent<Image>();
+
         RandomNameAtStart();
     }
     void SetUpForServer()
@@ -236,6 +258,8 @@ public class Manager : MonoBehaviour
 
         SetUpClientrows();
         SetActualSettings();
+        selectedchar.SetActive(true);
+        SetPrefCharCard(dropdowns[myindex].value);
     }
     void SetUpForClient()
     {
@@ -246,6 +270,7 @@ public class Manager : MonoBehaviour
             plusbuttons[i].SetActive(false);
             minusbuttons[i].SetActive(false);
         }
+        SetPrefCharCard(dropdowns[myindex].value);
     }
 
     void Panelchange(int x)
@@ -256,45 +281,101 @@ public class Manager : MonoBehaviour
                 mainmenu.SetActive(true);
                 join.SetActive(false);
                 lobby.SetActive(false);
-                game.SetActive(false);
+                gamebutton.SetActive(false);
                 break;
 
             case 2: //Join
                 mainmenu.SetActive(false);
                 join.SetActive(true);
                 lobby.SetActive(false);
-                game.SetActive(false);
+                gamebutton.SetActive(false);
                 break;
             case 3: //Lobby
                 mainmenu.SetActive(false);
                 join.SetActive(false);
                 lobby.SetActive(true);
-                game.SetActive(false);
+                gamebutton.SetActive(false);
                 break;
             case 4: //Lobby
                 mainmenu.SetActive(false);
                 join.SetActive(false);
                 lobby.SetActive(false);
-                game.SetActive(true);
+                gamebutton.SetActive(true);
                 break;
 
         }
     }
-
+    void SetPrefCharCard(int index)
+    {
+        prefcharcard.sprite = charcards[index];
+    }
 
     #endregion UI
 
+    #region Log
+    [SerializeField]
+    GameObject scrdwn, scrup, scrtxt;
+    Text logobj;
+    int logoffset = 0;
+    List<string> logs = new List<string>();
+
+    void InitLogStuff()
+    {
+        logobj = scrtxt.GetComponent<Text>();
+    }
+    public void Log(string msg)
+    {
+        if (logs.Count == 100)
+            logs.RemoveAt(0);
+        StringBuilder sb = new StringBuilder();
+        System.DateTime time = System.DateTime.Now;
+        sb.Append(time.ToString("HH:mm:ss")).Append(" - ").Append(msg);
+        logs.Add(sb.ToString());
+        Debug.Log(sb.ToString());
+        if (logs.Count < 6)
+            logoffset = 0;
+        else
+            logoffset = 4;
+        ShowLastFive();
+    }
+    void ShowLastFive()
+    {
+        if (logs.Count == 0)
+            return;
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = logs.Count - 1 - logoffset, j = 0; i < logs.Count && j < 5; i++, j++)
+            sb.AppendLine(logs[i]);
+
+        logobj.text = sb.ToString();
+
+    }
+    public void LogPlus()
+    {
+        if (logoffset < logs.Count-1)
+            logoffset++;
+        ShowLastFive();
+    }
+    public void LogMinus()
+    {
+        if (logoffset > 4)
+            logoffset--;
+        ShowLastFive();
+    }
+
+    #endregion Log
 
 
     void Start()
     {
+        InitLogStuff();
         FindUIElements();
         FindUIComponentsAndSet();
+
         Panelchange(1);
     }
 
     public void Host(){
-        
         isserver = true;
         SetUpForServer();
         Panelchange(3);

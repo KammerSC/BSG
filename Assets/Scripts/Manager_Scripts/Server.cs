@@ -35,9 +35,9 @@ public class Server : MonoBehaviour
         HostTopology topo = new HostTopology(cc, maxuser);
         hostid = NetworkTransport.AddHost(topo, port, null);
 
-        Debug.Log("Opening port: " + port);
+        manager.Log("Opening port: " + port);
         isstarted = true;
-        Debug.Log("<{[SERVER STARTED]}>");
+        manager.Log("<{[SERVER STARTED]}>");
     }
 
     void UpdateMassage(){
@@ -57,7 +57,7 @@ public class Server : MonoBehaviour
                 break;
             case NetworkEventType.DataEvent:
                 ServerTranslate(recbuffer);
-                Debug.Log("<SERVER> Data sent to User[" + connectionid + "]");
+                manager.Log("Data recived from client[" + connectionid + "]: " + "data[0]: " + recbuffer[0]+ ", data[1]: " + recbuffer[1]);
                 break;
 
             //--------------------
