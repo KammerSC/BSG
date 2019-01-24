@@ -20,7 +20,8 @@ public class Manager : MonoBehaviour
     GameObject serverpf, clientpf;
 
     GameObject serverobj, clientobj; 
-    Client client; Server server;
+    public Client client; public Server server;
+    Game game;
 
 
     #region Main Menu
@@ -175,7 +176,12 @@ public class Manager : MonoBehaviour
     #endregion Clientlist
 
     
-
+    public void LaunchGame()
+    {
+        if (isserver == false)
+            return;
+        game = new Game(this, settings);
+    }
 
 
 
@@ -184,7 +190,7 @@ public class Manager : MonoBehaviour
     #region UI
 
     /* UI's child objects */
-    GameObject mainmenu, join, lobby, game;
+    GameObject mainmenu, join, lobby, gamebutton;
 
     GameObject[] presets = new GameObject[4];
     GameObject[] plusbuttons = new GameObject[15], minusbuttons = new GameObject[15];
@@ -196,7 +202,7 @@ public class Manager : MonoBehaviour
         mainmenu = transform.GetChild(0).gameObject;
         join = transform.GetChild(1).gameObject;
         lobby = transform.GetChild(2).gameObject;
-        game = transform.GetChild(3).gameObject;
+        gamebutton = transform.GetChild(3).gameObject;
 
         /* Lobby's child objects */
         for (int i=0; i<15; i++){
@@ -275,26 +281,26 @@ public class Manager : MonoBehaviour
                 mainmenu.SetActive(true);
                 join.SetActive(false);
                 lobby.SetActive(false);
-                game.SetActive(false);
+                gamebutton.SetActive(false);
                 break;
 
             case 2: //Join
                 mainmenu.SetActive(false);
                 join.SetActive(true);
                 lobby.SetActive(false);
-                game.SetActive(false);
+                gamebutton.SetActive(false);
                 break;
             case 3: //Lobby
                 mainmenu.SetActive(false);
                 join.SetActive(false);
                 lobby.SetActive(true);
-                game.SetActive(false);
+                gamebutton.SetActive(false);
                 break;
             case 4: //Lobby
                 mainmenu.SetActive(false);
                 join.SetActive(false);
                 lobby.SetActive(false);
-                game.SetActive(true);
+                gamebutton.SetActive(true);
                 break;
 
         }
@@ -326,7 +332,9 @@ public class Manager : MonoBehaviour
         sb.Append(time.ToString("HH:mm:ss")).Append(" - ").Append(msg);
         logs.Add(sb.ToString());
         Debug.Log(sb.ToString());
-        if (logs.Count > 6)
+        if (logs.Count < 6)
+            logoffset = 0;
+        else
             logoffset = 4;
         ShowLastFive();
     }
@@ -338,8 +346,6 @@ public class Manager : MonoBehaviour
 
         for (int i = logs.Count - 1 - logoffset, j = 0; i < logs.Count && j < 5; i++, j++)
             sb.AppendLine(logs[i]);
-
-        Debug.Log("offset: " +logoffset + " count: " + logs.Count);
 
         logobj.text = sb.ToString();
 

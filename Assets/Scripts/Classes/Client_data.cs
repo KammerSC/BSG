@@ -6,7 +6,7 @@ using UnityEngine;
 public class Client_data 
 {
     public byte count = 1;
-    public byte[] ids, prefchar, ready;
+    public byte[] ids, prefchar, ready, serialnum, actchar;
     public string[] names;
 
     public Client_data(byte myid, string myname)
@@ -133,6 +133,8 @@ public class Client_data
 
         return data;
     }
+
+
     public void AcceptData(byte[] data)
     {
         if (data[0] != 1)
@@ -174,11 +176,13 @@ public class Client_data
                 SetReady(data[2], data[4]);
                 #endregion 1:5
                 break;
+
+
             case 10://Delete a client by ID
-                #region 1:5
+                #region 1:10
                 Debug.Log("<CLIENT> Client record removed.");
                 Remove(data[2]);
-                #endregion 1:5
+                #endregion 1:10
                 break;
 
         }
