@@ -27,9 +27,10 @@ public class Game
     void SetPlayerList() {
         List<SCOne> prefc = new List<SCOne>(), filled = new List<SCOne>();
         System.Random rnd = new System.Random();
+        // ID - preferált karakter összerendelés aka ki kit szeretne alakítani
         for(int i=0; i<manager.clientdata.count; i++)
             prefc.Add(new SCOne( manager.clientdata.ids[i], manager.clientdata.prefchar[i]));
-        /*Lista randomizálása és egy support karaktert választó player a végére kerül.*/
+        /* Lista randomizálása és egy support karaktert választó player a végére kerül. */
         for (int i = 0; i < prefc.Count; i++)
         {
             int x = rnd.Next() % prefc.Count;
@@ -37,6 +38,7 @@ public class Game
             prefc[i] = prefc[x];
             prefc[x] = tmp;
         }
+        // Az első support karakter a lista végére kerül 
         for (int i = 0; i < prefc.Count; i++){
             if(prefc[i].charnum == 9){
                 SCOne tmp = prefc[i];
@@ -48,32 +50,34 @@ public class Game
 
         /*Military L., Political L., Pilot szerepek keresése és betöltése.*/
         bool[] roles = new bool[3];
+        //ha van a listában megfelelő karakter akkor az itt kiválasztásra kerül
         for(int i=0; i<prefc.Count; i++)
         {
             if(roles[0] == false && prefc[i].role == 0)
             {
                 filled.Add(prefc[i]);
+                prefc.Remove(prefc[i]);
+                i--;
                 roles[0] = true;
             }
             else if (roles[1] == false && prefc[i].role == 1)
             {
                 filled.Add(prefc[i]);
+                prefc.Remove(prefc[i]);
+                i--;
                 roles[1] = true;
             }
             else if (roles[2] == false && prefc[i].role == 2)
             {
                 filled.Add(prefc[i]);
+                prefc.Remove(prefc[i]);
+                i--;
                 roles[2] = true;
             }
         }
-        for(int i=0; i<filled.Count; i++)
-            for(int j=0; j<prefc.Count; j++)
-                if(filled[i].id == prefc[j].id)
-                {
-                    prefc.Remove(prefc[j]);
-                    break;
-                }
-        for(int i=0; i<3; i++)
+
+        //A betöltetlen kötelező role-okra történő kiválasztás a role megfelelő karakterei közül véletlenszerűen
+        for (int i=0; i<3; i++)
             if (roles[i] == false && prefc.Count > 0){
                 SCOne tmp = prefc[0];
                 prefc.Remove(tmp);
@@ -81,56 +85,67 @@ public class Game
                 filled.Add(tmp2);
             }
 
+        //A tömb a szabad karakterek tárolására szolgál
+        bool[] or = new bool[10]; 
+
         /*Szabad és foglalt karakterek jegyzése.*/
         byte[] pc = new byte[10];
         for (int i = 0; i < filled.Count; i++)
-            pc[filled[i].charnum]++;
+            or[filled[i].charnum] = true;
 
         /*Azon preferált karakterek kiosztása amelyek szabadok*/
         for (int i = 0; i < prefc.Count; i++)
         {
-            if(pc[prefc[i].charnum] == 0)
+            if(or[prefc[i].charnum] == false)
             {
-                pc[prefc[i].charnum]++;
-                filled.Add(prefc[i]);
-                prefc.Remove(prefc[i]);
+                or[prefc[i].charnum] = true;
+                SCOne tmp = prefc[i];
+                filled.Add(tmp);
+                prefc.Remove(tmp);
+                i--;
             }
         }
 
         /*Maradék játékos - maradék karakter kiosztás.*/
-        byte[] leftover = new byte[10];int c = 0;
+        //Szabad karakterek megtalálása és a karaktert azonosító száma elrakása egy tömbbe, a "c" változó számon tartja
+        //a szabad karakterek számát
+        int[] leftover = new int[10]; int c = 0;
         for(int i=0; i<10; i++)
         {
-            if(pc[i] == 0)
+            if(or[i] == false)
             {
-                leftover[c] = (byte)i;
+                leftover[c] = i;
                 c++;
             }
         }
+        
+        /*A karakter nélküli játékosok véletlenszerűen kapnak egy még szabad karaktert*/
+        //A szabad karaktereket tartalmazó tömb randomizálása
         for (int i = 0; i < c; i++)
         {
             int x = rnd.Next() % c;
-            byte tmp = leftover[i];
+            byte tmp = (byte) leftover[i];
             leftover[i] = leftover[x];
             leftover[x] = tmp;
         }
+        //A szabad karakterek játékoshoz való rendelése, ha több a játékos mint a karakter akkor
+        //a 10 számot kapja meg ami későbbiekben az observert fogja jelenteni
+        for (int i = 0; i < prefc.Count; i++)
+        {
+            if (i < c)
+                filled.Add(new SCOne(prefc[i].id, (byte)leftover[i]));
+            else
+                filled.Add(new SCOne(prefc[i].id, 10));
+        }
+        prefc.Clear();
 
-            /*byte[] pc = new byte[10];
-            for (int i = 0; i < filled.Count; i++)
-                pc[filled[i].charnum]++;*/
-
-
-
-
-            manager.Log("----------FILLED----------");
+        /*manager.Log("----------FILLED3----------");
         for (int i = 0; i < filled.Count; i++)
             manager.Log(filled[i].ToString());
-        manager.Log("--------PREFLEFT------------");
+        manager.Log("--------PREFLEFT3------------");
         for (int i = 0; i < prefc.Count; i++)
             manager.Log(prefc[i].ToString());
-        manager.Log("--------------------");
-
-
+        manager.Log("--------------------");*/
     }
 
 
