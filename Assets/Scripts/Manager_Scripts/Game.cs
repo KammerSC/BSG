@@ -25,36 +25,45 @@ public class Game
         SetPlayerList();
     }
     void SetPlayerList() {
-
-        List<SCOne> prefc = new List<SCOne>();
-        List<SCOne> filled = new List<SCOne>();
+        List<SCOne> prefc = new List<SCOne>(), filled = new List<SCOne>();
         System.Random rnd = new System.Random();
-
-        
         for(int i=0; i<manager.clientdata.count; i++)
             prefc.Add(new SCOne( manager.clientdata.ids[i], manager.clientdata.prefchar[i]));
-        //lista vél.sorrend + supportok a végére
+        /*Lista randomizálása és egy support karaktert választó player a végére kerül.*/
+        for (int i = 0; i < prefc.Count; i++)
+        {
+            int x = rnd.Next() % prefc.Count;
+            SCOne tmp = prefc[i];
+            prefc[i] = prefc[x];
+            prefc[x] = tmp;
+        }
+        for (int i = 0; i < prefc.Count; i++){
+            if(prefc[i].charnum == 9){
+                SCOne tmp = prefc[i];
+                prefc.Remove(tmp);
+                prefc.Add(tmp);
+                break;
+            }
+        }
 
-
-
-        //kötelező role-ok keresése
-        bool mil = false, pol = false, pil = false;
+        /*Military L., Political L., Pilot szerepek keresése és betöltése.*/
+        bool[] roles = new bool[3];
         for(int i=0; i<prefc.Count; i++)
         {
-            if(mil == false && prefc[i].role == 0)
+            if(roles[0] == false && prefc[i].role == 0)
             {
                 filled.Add(prefc[i]);
-                mil = true;
+                roles[0] = true;
             }
-            else if (pol == false && prefc[i].role == 1)
+            else if (roles[1] == false && prefc[i].role == 1)
             {
                 filled.Add(prefc[i]);
-                pol = true;
+                roles[1] = true;
             }
-            else if (pil == false && prefc[i].role == 2)
+            else if (roles[2] == false && prefc[i].role == 2)
             {
                 filled.Add(prefc[i]);
-                pil = true;
+                roles[2] = true;
             }
         }
         for(int i=0; i<filled.Count; i++)
@@ -64,39 +73,56 @@ public class Game
                     prefc.Remove(prefc[j]);
                     break;
                 }
+        for(int i=0; i<3; i++)
+            if (roles[i] == false && prefc.Count > 0){
+                SCOne tmp = prefc[0];
+                prefc.Remove(tmp);
+                SCOne tmp2 = new SCOne(tmp.id, (byte)((rnd.Next() % 3)+i*3));
+                filled.Add(tmp2);
+            }
+
+        /*Szabad és foglalt karakterek jegyzése.*/
         byte[] pc = new byte[10];
         for (int i = 0; i < filled.Count; i++)
             pc[filled[i].charnum]++;
 
-
-        if (mil == false && prefc.Count > 0)
+        /*Azon preferált karakterek kiosztása amelyek szabadok*/
+        for (int i = 0; i < prefc.Count; i++)
         {
-            SCOne tmp = prefc[0];
-            prefc.Remove(tmp);
-            byte[] trio = new byte[3];
-            int counter = 0;
-            for(int i=0; i<3; i++)
-                if(pc[i] == 0)
-                {
-                    trio[counter] = (byte)i;
-                    counter++;
-                }
-            int choosen = rnd.Next() % counter;
-            SCOne tmp2 = new SCOne(tmp.id, (byte)choosen);
-            filled.Add(tmp2);
+            if(pc[prefc[i].charnum] == 0)
+            {
+                pc[prefc[i].charnum]++;
+                filled.Add(prefc[i]);
+                prefc.Remove(prefc[i]);
+            }
         }
 
+        /*Maradék játékos - maradék karakter kiosztás.*/
+        byte[] leftover = new byte[10];int c = 0;
+        for(int i=0; i<10; i++)
+        {
+            if(pc[i] == 0)
+            {
+                leftover[c] = (byte)i;
+                c++;
+            }
+        }
+        for (int i = 0; i < c; i++)
+        {
+            int x = rnd.Next() % c;
+            byte tmp = leftover[i];
+            leftover[i] = leftover[x];
+            leftover[x] = tmp;
+        }
+
+            /*byte[] pc = new byte[10];
+            for (int i = 0; i < filled.Count; i++)
+                pc[filled[i].charnum]++;*/
 
 
 
-        /*byte[] pc = new byte[10];
-        for (int i = 0; i < filled.Count; i++)
-            pc[filled[i].charnum]++;*/
 
-
-
-
-        manager.Log("----------FILLED----------");
+            manager.Log("----------FILLED----------");
         for (int i = 0; i < filled.Count; i++)
             manager.Log(filled[i].ToString());
         manager.Log("--------PREFLEFT------------");
