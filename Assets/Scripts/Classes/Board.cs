@@ -6,10 +6,12 @@ using UnityEngine;
 public class Board
 {
     Settings settings;
+    Manager manager;
 
-    Board(Settings settings)
+    Board(Manager manager, Settings settings)
     {
         this.settings = settings;
+        this.manager = manager;
     }
 
     //Ship types should be referred in methods by numbers as follows
@@ -29,7 +31,7 @@ public class Board
         else if (type == 3)
             heavyRaiders.Remove(heavyRaiders.Find(x => x.szektor == szektor));
         else
-            Console.WriteLine("No such ship type!");
+            manager.Log("leveszRaider - No such ship type!");
     }
 
     void levesz(object hajo)
@@ -41,7 +43,7 @@ public class Board
         else if (hajo is BaseStar)
             baseStars.Remove((BaseStar)hajo);
         else
-            Console.WriteLine("No such ship type!");
+            manager.Log("levesz - No such ship type!");
     }
 
     void lerak(byte szektor, byte type)
@@ -57,7 +59,7 @@ public class Board
         else if (type == 4)
             baseStars.Add(new BaseStar(szektor));
         else
-            Console.WriteLine("No such ship type!");
+            manager.Log("lerak - No such ship type!");
     }
 
     class Raider
