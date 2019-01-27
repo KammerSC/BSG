@@ -4,5 +4,5 @@ using UnityEngine;
 
 public class SkillCard
 {
-    public byte type;
+    public byte type, subtype, power;
 }
